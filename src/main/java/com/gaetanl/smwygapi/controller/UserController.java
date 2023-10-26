@@ -1,71 +1,95 @@
 package com.gaetanl.smwygapi.controller;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaetanl.smwygapi.model.User;
+import com.gaetanl.smwygapi.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
+import java.util.Optional;
 
 @RestController
 public class UserController {
+    @Autowired
+    private UserRepository userRepository;
+
+    private void putExceptionInResponseHeaders(HttpHeaders responseHeaders, Exception exception) {
+        responseHeaders.set(
+                "Exception",
+                String.format("{\"simpleName\": \"%s\", \"name\": \"%s\", \"message\": \"%s\", \"stacktrace\":\"%s\"}",
+                        exception.getClass().getSimpleName(),
+                        exception.getClass().getName(),
+                        exception.getMessage(),
+                        Arrays.toString(exception.getStackTrace())));
+    }
+
     @PutMapping(value = "/user")
-    public ResponseEntity<String> createUser(@RequestBody String json) {
+    public ResponseEntity<String> createUser(@RequestBody String jsonUser) {
+        HttpHeaders responseHeaders = new HttpHeaders();
+        String body = "{}";
+
         ObjectMapper objectMapper = new ObjectMapper();
-        User mock;
+        User savedUser;
+
         try {
-            mock = objectMapper.readValue(json, User.class);
+            savedUser = objectMapper.readValue(jsonUser, User.class);
+            if (savedUser.getId() != null) throw new IllegalArgumentException("Cannot specify an id in body when creating a user");
+            savedUser = userRepository.save(savedUser);
         }
-        catch (JsonProcessingException e) {
-            HttpHeaders responseHeaders = new HttpHeaders();
-            responseHeaders.set("exception", e.getMessage());
+        catch (JacksonException | IllegalArgumentException e) {
+            putExceptionInResponseHeaders(responseHeaders, e);
 
             return new ResponseEntity<String>(
-                    "(Mock) Couldn't create user",
+                    body,
                     responseHeaders,
-                    HttpStatus.INTERNAL_SERVER_ERROR);
+                    HttpStatus.BAD_REQUEST);
         }
 
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.set("user", json);
+        try {
+            body = objectMapper.writeValueAsString(savedUser);
+        }
+        catch (JacksonException e) {
+            putExceptionInResponseHeaders(responseHeaders, e);
+            // Continue
+        }
 
         return new ResponseEntity<String>(
-                String.format("(Mock) Created user with id: %d and username: '%s'",mock.getId(), mock.getUsername()),
+                body,
                 responseHeaders,
                 HttpStatus.CREATED);
     }
 
     @GetMapping("/user/{id}")
     public ResponseEntity<String> readUser(@PathVariable("id") int id) {
-        boolean found = id > 0;
+        HttpHeaders responseHeaders = new HttpHeaders();
+        String body = "{}";
 
-        if (!found) {
+        Optional<User> foundResult = userRepository.findById(id);
+
+        if (foundResult.isEmpty()) {
             return new ResponseEntity<String>(
-                    String.format("(Mock) Couldn't read user with id: %d", id),
-                    null,
+                    body,
+                    responseHeaders,
                     HttpStatus.NOT_FOUND);
         }
         else {
-            User mock = new User(id, "Mock");
-
+            User foundUser = foundResult.get();
             ObjectMapper objectMapper = new ObjectMapper();
-            String json;
             try {
-                json = objectMapper.writeValueAsString(mock);
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
+                body = objectMapper.writeValueAsString(foundUser);
+            }
+            catch (JacksonException e) {
+                putExceptionInResponseHeaders(responseHeaders, e);
+                // Continue
             }
 
-            HttpHeaders responseHeaders = new HttpHeaders();
-            responseHeaders.set("user", json);
-
             return new ResponseEntity<String>(
-                    String.format("(Mock) Read user with id: %d", id),
+                    body,
                     responseHeaders,
                     HttpStatus.OK);
         }
@@ -73,58 +97,69 @@ public class UserController {
 
     @GetMapping("/user")
     public ResponseEntity<String> readUsers() {
-        List<User> mock = new ArrayList<User>();
-        for (int i = 0 ; i < 10 ; i++) {
-            mock.add(new User(i, String.format("Mock %d", i)));
-        }
+        HttpHeaders responseHeaders = new HttpHeaders();
+        String body = "[]";
+
+        Iterable<User> users = userRepository.findAll();
 
         ObjectMapper objectMapper = new ObjectMapper();
-        String json;
         try {
-            json = objectMapper.writeValueAsString(mock);
+            body = objectMapper.writeValueAsString(users);
         }
-        catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+        catch (JacksonException e) {
+            putExceptionInResponseHeaders(responseHeaders, e);
+            // Continue
         }
-
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.set("users", json);
 
         return new ResponseEntity<String>(
-                "(Mock) Read all users",
+                body,
                 responseHeaders,
                 HttpStatus.OK);
     }
 
     @PostMapping("/user/{id}")
     public ResponseEntity<String> updateUser(@PathVariable("id") int id, @RequestBody String json) {
-        boolean found = id == 42;
+        HttpHeaders responseHeaders = new HttpHeaders();
+        String body = "{}";
 
-        if (!found) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        User updatedUser;
+
+        Optional<User> foundResult = userRepository.findById(id);
+
+        if (foundResult.isEmpty()) {
             return new ResponseEntity<String>(
-                    String.format("(Mock) Couldn't read user with id: %d", id),
-                    null,
+                    body,
+                    responseHeaders,
                     HttpStatus.NOT_FOUND);
         }
         else {
-            User foundMock = new User(42, "oldUserName");
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            HttpHeaders responseHeaders = new HttpHeaders();
-            User updatedMock;
             try {
-                updatedMock = objectMapper.readValue(json, User.class);
+                updatedUser = objectMapper.readValue(json, User.class);
+                if (updatedUser.getId() != null) throw new IllegalArgumentException("Cannot specify an id in body when updating a user");
+                int foundId = foundResult.get().getId();
+                updatedUser.setId(foundId);
+                updatedUser = userRepository.save(updatedUser);
             }
-            catch (JsonProcessingException e) {
-                responseHeaders.set("exception", e.getMessage());
+            catch (JacksonException | IllegalArgumentException e) {
+                putExceptionInResponseHeaders(responseHeaders, e);
 
                 return new ResponseEntity<String>(
-                        String.format("(Mock) Couldn't update user with id: %d", id),
+                        body,
                         responseHeaders,
-                        HttpStatus.INTERNAL_SERVER_ERROR);
+                        HttpStatus.BAD_REQUEST);
             }
+
+            try {
+                body = objectMapper.writeValueAsString(updatedUser);
+            }
+            catch (JacksonException e) {
+                putExceptionInResponseHeaders(responseHeaders, e);
+                // Continue
+            }
+
             return new ResponseEntity<String>(
-                    String.format("(Mock) Updated user with id: %d, username changed from '%s' to '%s'", id, foundMock.getUsername(), updatedMock.getUsername()),
+                    body,
                     responseHeaders,
                     HttpStatus.OK);
         }
@@ -132,18 +167,25 @@ public class UserController {
 
     @DeleteMapping("/user/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable("id") int id) {
-        boolean found = id == 42;
+        HttpHeaders responseHeaders = new HttpHeaders();
+        String body = "{}";
 
-        if (!found) {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        Optional<User> foundResult = userRepository.findById(id);
+
+        if (foundResult.isEmpty()) {
             return new ResponseEntity<String>(
-                    String.format("(Mock) Couldn't read user with id: %d", id),
-                    null,
+                    body,
+                    responseHeaders,
                     HttpStatus.NOT_FOUND);
         }
         else {
+            userRepository.delete(foundResult.get());
+
             return new ResponseEntity<String>(
-                    String.format("(Mock) Deleted user with id: %d", id),
-                    null,
+                    body,
+                    responseHeaders,
                     HttpStatus.OK);
         }
     }
