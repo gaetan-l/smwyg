@@ -6,10 +6,7 @@ import com.gaetanl.smwygapi.ApiUtil;
 import com.gaetanl.smwygapi.repository.TitleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
@@ -39,6 +36,7 @@ public class TitleController {
      *
      * @return a list of title ids
      */
+    @CrossOrigin(origins = "http://localhost")
     @GetMapping("/title")
     public ResponseEntity<String> readTitles() {
         HttpHeaders responseHeaders = new HttpHeaders();
@@ -79,6 +77,7 @@ public class TitleController {
      *
      * @return the details of the title
      */
+    @CrossOrigin(origins = "http://localhost")
     @GetMapping("/title-details/{id}")
     public ResponseEntity<String> readTitleDetails(@PathVariable("id") String id) {
         HttpHeaders responseHeaders = new HttpHeaders();
@@ -124,6 +123,7 @@ public class TitleController {
      *
      * @return the keywords of the title
      */
+    @CrossOrigin(origins = "http://localhost")
     @GetMapping("/title-keywords/{id}")
     public ResponseEntity<String> readTitleKeywords(@PathVariable("id") String id) {
         HttpHeaders responseHeaders = new HttpHeaders();
