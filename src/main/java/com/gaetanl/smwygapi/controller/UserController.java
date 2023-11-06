@@ -2,6 +2,7 @@ package com.gaetanl.smwygapi.controller;
 
 import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gaetanl.smwygapi.ApiUtil;
 import com.gaetanl.smwygapi.model.User;
 import com.gaetanl.smwygapi.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,16 +19,6 @@ public class UserController {
     @Autowired
     private UserRepository userRepository;
 
-    private void putExceptionInResponseHeaders(HttpHeaders responseHeaders, Exception exception) {
-        responseHeaders.set(
-                "Exception",
-                String.format("{\"simpleName\": \"%s\", \"name\": \"%s\", \"message\": \"%s\", \"stacktrace\":\"%s\"}",
-                        exception.getClass().getSimpleName(),
-                        exception.getClass().getName(),
-                        exception.getMessage(),
-                        Arrays.toString(exception.getStackTrace())));
-    }
-
     @PutMapping(value = "/user")
     public ResponseEntity<String> createUser(@RequestBody String jsonUser) {
         HttpHeaders responseHeaders = new HttpHeaders();
@@ -42,7 +33,7 @@ public class UserController {
             savedUser = userRepository.save(savedUser);
         }
         catch (JacksonException | IllegalArgumentException e) {
-            putExceptionInResponseHeaders(responseHeaders, e);
+            ApiUtil.putExceptionInResponseHeaders(responseHeaders, e);
 
             return new ResponseEntity<String>(
                     body,
@@ -54,7 +45,7 @@ public class UserController {
             body = objectMapper.writeValueAsString(savedUser);
         }
         catch (JacksonException e) {
-            putExceptionInResponseHeaders(responseHeaders, e);
+            ApiUtil.putExceptionInResponseHeaders(responseHeaders, e);
             // Continue
         }
 
@@ -84,7 +75,7 @@ public class UserController {
                 body = objectMapper.writeValueAsString(foundUser);
             }
             catch (JacksonException e) {
-                putExceptionInResponseHeaders(responseHeaders, e);
+                ApiUtil.putExceptionInResponseHeaders(responseHeaders, e);
                 // Continue
             }
 
@@ -107,7 +98,7 @@ public class UserController {
             body = objectMapper.writeValueAsString(users);
         }
         catch (JacksonException e) {
-            putExceptionInResponseHeaders(responseHeaders, e);
+            ApiUtil.putExceptionInResponseHeaders(responseHeaders, e);
             // Continue
         }
 
@@ -142,7 +133,7 @@ public class UserController {
                 updatedUser = userRepository.save(updatedUser);
             }
             catch (JacksonException | IllegalArgumentException e) {
-                putExceptionInResponseHeaders(responseHeaders, e);
+                ApiUtil.putExceptionInResponseHeaders(responseHeaders, e);
 
                 return new ResponseEntity<String>(
                         body,
@@ -154,7 +145,7 @@ public class UserController {
                 body = objectMapper.writeValueAsString(updatedUser);
             }
             catch (JacksonException e) {
-                putExceptionInResponseHeaders(responseHeaders, e);
+                ApiUtil.putExceptionInResponseHeaders(responseHeaders, e);
                 // Continue
             }
 
