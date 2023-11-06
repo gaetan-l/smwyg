@@ -13,17 +13,20 @@ import reactor.core.publisher.Mono;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashSet;
-import java.util.Set;
 
 @RestController
 public class TitleController {
-    private final String API_KEY = "d90ee7ff9emsh4661d06e21dac39p15fbaejsned54758f9253";
-    private final String API_HOST = "imdb8.p.rapidapi.com";
-    private final String API_ROOT_URI = "https://imdb8.p.rapidapi.com";
-    private final String URI_DEFAULT_TITLES = "/title/get-most-popular-movies?currentCountry=FR";
-    private final String URI_TITLE_DETAILS ="/title/get-details";
-    private final String URI_TITLE_KEYWORDS ="/title/get-genres";
+    private final String IMDB8_API_KEY = "d90ee7ff9emsh4661d06e21dac39p15fbaejsned54758f9253";
+    private final String IMDB8_API_HOST = "imdb8.p.rapidapi.com";
+    private final String IMDB8_API_ROOT_URI = "https://imdb8.p.rapidapi.com";
+    private final String IMDB8_URI_DEFAULT_TITLES = "/title/get-most-popular-movies?currentCountry=FR";
+    private final String IMDB8_URI_TITLE_DETAILS ="/title/get-details";
+    private final String IMDB8_URI_TITLE_KEYWORDS ="/title/get-genres";
+
+    private final String TMDB_API_KEY = "91b96d8d3dc851fb01aa9a36e8c81880";
+    private final String TMDB_API_ROOT_URI = "https://api.themoviedb.org/3/";
+    private final String IMAGE_API_ROOT_URI = "https://image.tmdb.org/t/p/w1280";
+    private final String TMDB_URI_DEFAULT_TITLES = "movie/popular";
 
     @Autowired
     private TitleRepository titleRepository;
@@ -47,9 +50,9 @@ public class TitleController {
             WebClient client = WebClient.create();
 
             Mono<String[]> response = client.get()
-                    .uri(new URI(this.API_ROOT_URI + this.URI_DEFAULT_TITLES))
-                    .header("X-RapidAPI-Key", this.API_KEY)
-                    .header("X-RapidAPI-Host", this.API_HOST)
+                    .uri(new URI(this.IMDB8_API_ROOT_URI + this.IMDB8_URI_DEFAULT_TITLES))
+                    .header("X-RapidAPI-Key", this.IMDB8_API_KEY)
+                    .header("X-RapidAPI-Host", this.IMDB8_API_HOST)
                     .accept(MediaType.APPLICATION_JSON)
                     .retrieve()
                     .bodyToMono(String[].class);
@@ -89,15 +92,17 @@ public class TitleController {
             WebClient client = WebClient.create();
 
             body = client.get()
-                    .uri(new URI(this.API_ROOT_URI + this.URI_TITLE_DETAILS + "?tconst=" + id))
-                    .header("X-RapidAPI-Key", this.API_KEY)
-                    .header("X-RapidAPI-Host", this.API_HOST)
+                    .uri(new URI(this.IMDB8_API_ROOT_URI + this.IMDB8_URI_TITLE_DETAILS + "?tconst=" + id))
+                    .header("X-RapidAPI-Key", this.IMDB8_API_KEY)
+                    .header("X-RapidAPI-Host", this.IMDB8_API_HOST)
                     .accept(MediaType.APPLICATION_JSON)
                     .retrieve()
                     .bodyToMono(String.class)
                     .block();
         }
         catch (WebClientResponseException we) {
+            ApiUtil.putExceptionInResponseHeaders(responseHeaders, we);
+
             return new ResponseEntity<String>(
                     body,
                     responseHeaders,
@@ -135,9 +140,9 @@ public class TitleController {
             WebClient client = WebClient.create();
 
             Mono<String[]> response = client.get()
-                    .uri(new URI(this.API_ROOT_URI + this.URI_TITLE_KEYWORDS + "?tconst=" + id))
-                    .header("X-RapidAPI-Key", this.API_KEY)
-                    .header("X-RapidAPI-Host", this.API_HOST)
+                    .uri(new URI(this.IMDB8_API_ROOT_URI + this.IMDB8_URI_TITLE_KEYWORDS + "?tconst=" + id))
+                    .header("X-RapidAPI-Key", this.IMDB8_API_KEY)
+                    .header("X-RapidAPI-Host", this.IMDB8_API_HOST)
                     .accept(MediaType.APPLICATION_JSON)
                     .retrieve()
                     .bodyToMono(String[].class);
@@ -152,6 +157,38 @@ public class TitleController {
                     HttpStatus.NOT_FOUND);
         }
         catch (JsonProcessingException | URISyntaxException e) {
+            ApiUtil.putExceptionInResponseHeaders(responseHeaders, e);
+
+            return new ResponseEntity<String>(
+                    body,
+                    responseHeaders,
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return new ResponseEntity<String>(
+                body,
+                responseHeaders,
+                HttpStatus.OK);
+    }
+
+    @CrossOrigin(origins = "http://localhost")
+    @GetMapping("/popular-titles")
+    public ResponseEntity<String> readPopularTitles() {
+        HttpHeaders responseHeaders = new HttpHeaders();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String body = "[]";
+        try {
+            WebClient client = WebClient.create();
+
+            body = client.get()
+                    .uri(new URI(this.TMDB_API_ROOT_URI + this.TMDB_URI_DEFAULT_TITLES + "?api_key=" + this.TMDB_API_KEY + "&page=1"))
+                    .accept(MediaType.APPLICATION_JSON)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+        }
+        catch (URISyntaxException e) {
             ApiUtil.putExceptionInResponseHeaders(responseHeaders, e);
 
             return new ResponseEntity<String>(
