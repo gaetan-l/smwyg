@@ -7,8 +7,11 @@ import com.gaetanl.smwygapi.repository.TitleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
@@ -22,6 +25,7 @@ public class TitleController {
     private final String API_HOST = "imdb8.p.rapidapi.com";
     private final String API_ROOT_URI = "https://imdb8.p.rapidapi.com";
     private final String URI_DEFAULT_TITLES = "/title/get-most-popular-movies?currentCountry=FR";
+    private final String URI_TITLE_DETAILS ="/title/get-details";
 
     @Autowired
     private TitleRepository titleRepository;
@@ -56,6 +60,51 @@ public class TitleController {
             body = objectMapper.writeValueAsString(responseArray);
         }
         catch (URISyntaxException | JsonProcessingException e) {
+            ApiUtil.putExceptionInResponseHeaders(responseHeaders, e);
+
+            return new ResponseEntity<String>(
+                    body,
+                    responseHeaders,
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return new ResponseEntity<String>(
+                body,
+                responseHeaders,
+                HttpStatus.OK);
+    }
+
+    /**
+     * Reads the details of a title using its id
+     *
+     * @return the details of the title
+     */
+    @GetMapping("/title/{id}")
+    public ResponseEntity<String> readTitleDetails(@PathVariable("id") String id) {
+        HttpHeaders responseHeaders = new HttpHeaders();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String body = "{}";
+
+        try {
+            WebClient client = WebClient.create();
+
+            body = client.get()
+                    .uri(new URI(this.API_ROOT_URI + this.URI_TITLE_DETAILS + "?tconst=" + id))
+                    .header("X-RapidAPI-Key", this.API_KEY)
+                    .header("X-RapidAPI-Host", this.API_HOST)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+        }
+        catch (WebClientResponseException we) {
+            return new ResponseEntity<String>(
+                    body,
+                    responseHeaders,
+                    HttpStatus.NOT_FOUND);
+        }
+        catch (URISyntaxException e) {
             ApiUtil.putExceptionInResponseHeaders(responseHeaders, e);
 
             return new ResponseEntity<String>(
