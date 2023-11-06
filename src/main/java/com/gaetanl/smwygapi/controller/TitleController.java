@@ -27,6 +27,7 @@ public class TitleController {
     private final String TMDB_API_ROOT_URI = "https://api.themoviedb.org/3/";
     private final String IMAGE_API_ROOT_URI = "https://image.tmdb.org/t/p/w1280";
     private final String TMDB_URI_DEFAULT_TITLES = "movie/popular";
+    private final String TMDB_URI_MOVIE_GENRES = "genre/movie/list";
 
     @Autowired
     private TitleRepository titleRepository;
@@ -183,6 +184,38 @@ public class TitleController {
 
             body = client.get()
                     .uri(new URI(this.TMDB_API_ROOT_URI + this.TMDB_URI_DEFAULT_TITLES + "?api_key=" + this.TMDB_API_KEY + "&page=1"))
+                    .accept(MediaType.APPLICATION_JSON)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+        }
+        catch (URISyntaxException e) {
+            ApiUtil.putExceptionInResponseHeaders(responseHeaders, e);
+
+            return new ResponseEntity<String>(
+                    body,
+                    responseHeaders,
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return new ResponseEntity<String>(
+                body,
+                responseHeaders,
+                HttpStatus.OK);
+    }
+
+    @CrossOrigin(origins = "http://localhost")
+    @GetMapping("/movie-genres")
+    public ResponseEntity<String> readMovieGenres() {
+        HttpHeaders responseHeaders = new HttpHeaders();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String body = "{}";
+        try {
+            WebClient client = WebClient.create();
+
+            body = client.get()
+                    .uri(new URI(this.TMDB_API_ROOT_URI + this.TMDB_URI_MOVIE_GENRES + "?api_key=" + this.TMDB_API_KEY))
                     .accept(MediaType.APPLICATION_JSON)
                     .retrieve()
                     .bodyToMono(String.class)
