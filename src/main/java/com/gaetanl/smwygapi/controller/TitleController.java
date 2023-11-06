@@ -26,6 +26,7 @@ public class TitleController {
     private final String API_ROOT_URI = "https://imdb8.p.rapidapi.com";
     private final String URI_DEFAULT_TITLES = "/title/get-most-popular-movies?currentCountry=FR";
     private final String URI_TITLE_DETAILS ="/title/get-details";
+    private final String URI_TITLE_KEYWORDS ="/title/get-genres";
 
     @Autowired
     private TitleRepository titleRepository;
@@ -56,7 +57,6 @@ public class TitleController {
                     .bodyToMono(String[].class);
 
             String[] responseArray = response.block();
-
             body = objectMapper.writeValueAsString(responseArray);
         }
         catch (URISyntaxException | JsonProcessingException e) {
@@ -79,7 +79,7 @@ public class TitleController {
      *
      * @return the details of the title
      */
-    @GetMapping("/title/{id}")
+    @GetMapping("/title-details/{id}")
     public ResponseEntity<String> readTitleDetails(@PathVariable("id") String id) {
         HttpHeaders responseHeaders = new HttpHeaders();
 
@@ -105,6 +105,53 @@ public class TitleController {
                     HttpStatus.NOT_FOUND);
         }
         catch (URISyntaxException e) {
+            ApiUtil.putExceptionInResponseHeaders(responseHeaders, e);
+
+            return new ResponseEntity<String>(
+                    body,
+                    responseHeaders,
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return new ResponseEntity<String>(
+                body,
+                responseHeaders,
+                HttpStatus.OK);
+    }
+
+    /**
+     * Reads the keywords of a title using its id
+     *
+     * @return the keywords of the title
+     */
+    @GetMapping("/title-keywords/{id}")
+    public ResponseEntity<String> readTitleKeywords(@PathVariable("id") String id) {
+        HttpHeaders responseHeaders = new HttpHeaders();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String body = "[]";
+
+        try {
+            WebClient client = WebClient.create();
+
+            Mono<String[]> response = client.get()
+                    .uri(new URI(this.API_ROOT_URI + this.URI_TITLE_KEYWORDS + "?tconst=" + id))
+                    .header("X-RapidAPI-Key", this.API_KEY)
+                    .header("X-RapidAPI-Host", this.API_HOST)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .retrieve()
+                    .bodyToMono(String[].class);
+
+            String[] responseArray = response.block();
+            body = objectMapper.writeValueAsString(responseArray);
+        }
+        catch (WebClientResponseException we) {
+            return new ResponseEntity<String>(
+                    body,
+                    responseHeaders,
+                    HttpStatus.NOT_FOUND);
+        }
+        catch (JsonProcessingException | URISyntaxException e) {
             ApiUtil.putExceptionInResponseHeaders(responseHeaders, e);
 
             return new ResponseEntity<String>(
