@@ -29,7 +29,3 @@ dependencies {
 tasks.withType<Test> {
 	useJUnitPlatform()
 }
-
-springBoot {
-	mainClass.set("com.gaetanl.demospringbootapi.DemoSpringBootApiApplication")
-}
