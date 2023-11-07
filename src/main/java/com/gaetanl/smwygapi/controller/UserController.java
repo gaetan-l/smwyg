@@ -2,7 +2,7 @@ package com.gaetanl.smwygapi.controller;
 
 import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gaetanl.smwygapi.ApiUtil;
+import com.gaetanl.smwygapi.util.ApiUtil;
 import com.gaetanl.smwygapi.model.User;
 import com.gaetanl.smwygapi.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
 import java.util.Optional;
 
 @RestController

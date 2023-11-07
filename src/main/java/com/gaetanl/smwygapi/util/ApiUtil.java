@@ -1,4 +1,4 @@
-package com.gaetanl.smwygapi;
+package com.gaetanl.smwygapi.util;
 
 import org.springframework.http.HttpHeaders;
 
