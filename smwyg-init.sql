@@ -1,3 +1,4 @@
 CREATE DATABASE smwyg;
 USE smwyg;
-GRANT ALL ON smwyg.* TO 'smwyg-api';
+CREATE USER 'smwyg-api'@'localhost' IDENTIFIED BY 'iwswyg';
+GRANT ALL ON smwyg.* TO 'smwyg-api'@'localhost';
