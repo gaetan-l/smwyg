@@ -1,60 +1,32 @@
 package com.gaetanl.smwygapi.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
-
-import java.util.ArrayList;
-import java.util.HashSet;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import java.util.Set;
 
 @Entity
+@Getter
+@NoArgsConstructor
 public class Title {
     @Id
-    @JsonProperty("id")
     private String id;
-    @JsonProperty("name")
+
+    @Setter
     private String name;
-    @JsonProperty("keywords")
+
+    @Setter
     @ElementCollection
     @CollectionTable
-    private Set<String> keywords;
+    private Set<String> genres;
 
-    @JsonCreator
-    public Title(@Nullable @JsonProperty("id") String id,
-                 @NonNull @JsonProperty(value = "name", required = true) String name,
-                 @NonNull @JsonProperty(value = "keywords", required = true) Set<String> keywords) {
+    public Title(String id, String name, Set<String> genres) {
         this.id = id;
         this.name = name;
-        this.keywords = keywords;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(@NonNull String id) {
-        this.id = id;
-    }
-
-    public @NonNull String getName() {
-        return name;
-    }
-
-    public void setName(@NonNull String name) {
-        this.name = name;
-    }
-
-    public @NonNull Set<String> getKeywords() {
-        return keywords;
-    }
-
-    public void setKeywords(@NonNull Set<String> keywords) {
-        this.keywords = keywords;
+        this.genres = genres;
     }
 }

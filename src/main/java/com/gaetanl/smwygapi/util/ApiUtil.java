@@ -1,7 +1,6 @@
 package com.gaetanl.smwygapi.util;
 
 import org.springframework.http.HttpHeaders;
-
 import java.util.Arrays;
 
 public final class ApiUtil {
