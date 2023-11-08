@@ -24,9 +24,13 @@ public class Title {
     @CollectionTable
     private Set<String> genres;
 
-    public Title(String id, String name, Set<String> genres) {
+    @Setter
+    private String pictureUri;
+
+    public Title(String id, String name, Set<String> genres, String pictureUri) {
         this.id = id;
         this.name = name;
         this.genres = genres;
+        this.pictureUri = pictureUri;
     }
 }

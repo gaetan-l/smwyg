@@ -82,7 +82,7 @@ public class TitleServiceImplTmdb implements TitleService {
         Set<String> genres = new HashSet<>();
         for (Integer genreId: dtoTitle.genreIds) genres.add(getGenres().get(genreId)); // NOTE: Can't use a lambda here because of exception cascading
 
-        return new Title(Integer.toString(dtoTitle.id), dtoTitle.title, genres);
+        return new Title(Integer.toString(dtoTitle.id), dtoTitle.title, genres, dtoTitle.posterPath);
     }
 
     /**
