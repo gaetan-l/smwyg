@@ -32,8 +32,8 @@ public class TitleController {
      * @return a list of titles
      */
     @CrossOrigin(origins = "http://localhost")
-    @GetMapping("/titles")
-    public ResponseEntity<String> readTitles(@RequestParam(required = false) Integer page) {
+    @GetMapping("/title")
+    public ResponseEntity<String> getAll(@RequestParam(required = false) Integer page) {
         String body = "[]";
         HttpHeaders responseHeaders = new HttpHeaders();
 
