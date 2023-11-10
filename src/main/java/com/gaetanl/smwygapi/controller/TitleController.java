@@ -1,6 +1,5 @@
 package com.gaetanl.smwygapi.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gaetanl.smwygapi.model.Title;
 import com.gaetanl.smwygapi.service.TitleService;
 import com.gaetanl.smwygapi.util.ApiUtil;
@@ -8,11 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -33,35 +34,32 @@ public class TitleController {
      */
     @CrossOrigin(origins = "http://localhost")
     @GetMapping("/title")
-    public ResponseEntity<String> getAll(@RequestParam(required = false) Integer page) {
-        String body = "[]";
-        HttpHeaders responseHeaders = new HttpHeaders();
+    public @NonNull ResponseEntity<String> readAll(@RequestParam(required = false) final Integer page) {
+        final HttpHeaders responseHeaders = new HttpHeaders();
+        final List<Title> titles;
 
         try {
-            List<Title> titles = titleService.getTitles(page);
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            body = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(titles);
+            titles = titleService.readAll(page);
         }
-        catch (WebClientResponseException | URISyntaxException e) {
+        catch (final WebClientResponseException | URISyntaxException e) {
             ApiUtil.putExceptionInResponseHeaders(responseHeaders, e);
 
             return new ResponseEntity<>(
-                    body,
+                    "[]",
                     responseHeaders,
                     HttpStatus.NOT_FOUND);
         }
-        catch (IOException e) {
+        catch (final IOException e) {
             ApiUtil.putExceptionInResponseHeaders(responseHeaders, e);
 
             return new ResponseEntity<>(
-                    body,
+                    "[]",
                     responseHeaders,
                     HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         return new ResponseEntity<>(
-                body,
+                ApiUtil.getObjectAsPrettyJson(titles, "[]", responseHeaders),
                 responseHeaders,
                 HttpStatus.OK);
     }

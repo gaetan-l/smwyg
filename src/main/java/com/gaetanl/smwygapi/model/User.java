@@ -1,44 +1,32 @@
 package com.gaetanl.smwygapi.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 
 @Entity
-public class User {
+@Getter
+@NoArgsConstructor
+public class User implements ModelObject {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @JsonProperty("id")
     private Integer id;
-    @JsonProperty("username")
+
     private String username;
 
-    @JsonCreator
-    public User(@Nullable @JsonProperty("id") Integer id, @NonNull @JsonProperty(value = "username", required = true) String username) {
+    public User(final Integer id, final String username) {
         this.id = id;
         this.username = username;
     }
 
-    public User() {}
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(@NonNull Integer id) {
-        this.id = id;
-    }
-
-    public @NonNull String getUsername() {
-        return username;
-    }
-
-    public void setUsername(@NonNull String username) {
-        this.username = username;
+    @Override
+    @JsonIgnore
+    public @NonNull String getIdAsString() {
+        return String.valueOf(id);
     }
 }
