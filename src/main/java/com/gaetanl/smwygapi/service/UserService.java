@@ -20,13 +20,13 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    public @NonNull User create(final User user) {
+    public @NonNull User create(@NonNull final User user) {
         ApiUtil.logMethodExecution(logger, "create", user);
         return userRepository.save(user);
     }
 
-    public Optional<User> read(final int id) {
-        ApiUtil.logMethodExecution(logger, "read", "id=" + id);
+    public @NonNull Optional<User> read(final int id) {
+        ApiUtil.logMethodExecution(logger, "read", String.format("{User with id=%s}", id));
         return userRepository.findById(id);
     }
 
@@ -37,12 +37,12 @@ public class UserService {
         return userList;
     }
 
-    public @NonNull User update(final User user) {
+    public @NonNull User update(@NonNull final User user) {
         ApiUtil.logMethodExecution(logger, "update", user);
         return userRepository.save(user);
     }
 
-    public void delete(final User user) {
+    public void delete(@NonNull final User user) {
         ApiUtil.logMethodExecution(logger, "delete", user);
         userRepository.delete(user);
     }

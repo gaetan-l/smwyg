@@ -6,6 +6,7 @@ import org.springframework.lang.Nullable;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Optional;
 
 public interface TitleService {
     /**
@@ -18,4 +19,14 @@ public interface TitleService {
      * @throws URISyntaxException  during API call URI building
      */
     @NonNull List<Title> readAll(@Nullable Integer page) throws URISyntaxException, IOException;
+
+    /**
+     * Returns a title.
+     *
+     * @return                     a list of titles
+     * @throws IOException         during Jackson deserialization
+     * @throws URISyntaxException  during API call URI building
+     */
+    @NonNull
+    Optional<Title> read(@NonNull final String id) throws URISyntaxException, IOException;
 }

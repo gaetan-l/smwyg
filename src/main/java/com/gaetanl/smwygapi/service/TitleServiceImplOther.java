@@ -5,8 +5,11 @@ import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Just an example to show how Spring chooses between multiple implementations
@@ -16,7 +19,12 @@ import java.util.List;
 @Service
 public class TitleServiceImplOther implements TitleService {
     @Override
-    public @NonNull List<Title> readAll(@Nullable final Integer page) {
+    public @NonNull List<Title> readAll(@Nullable final Integer page) throws URISyntaxException, IOException {
         return new ArrayList<>();
+    }
+
+    @Override
+    public @NonNull Optional<Title> read(@NonNull final String id) throws URISyntaxException, IOException {
+        return Optional.of(null);
     }
 }

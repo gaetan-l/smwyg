@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gaetanl.smwygapi.model.User;
 import com.gaetanl.smwygapi.service.UserService;
 import com.gaetanl.smwygapi.util.ApiUtil;
+import com.gaetanl.smwygapi.util.MalformedJsonParameter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -27,10 +28,10 @@ public class UserController {
 
         try {
             newUser = ApiUtil.getObjectMapper().readValue(jsonUser, User.class);
-            if (newUser.getId() != null) throw new IllegalArgumentException("Cannot specify an id in body when creating a user");
+            if (newUser.getId() != null) throw new MalformedJsonParameter("Cannot specify an id in body when creating a user");
             savedUser = userService.create(newUser);
         }
-        catch (final JsonProcessingException | IllegalArgumentException e) {
+        catch (final JsonProcessingException | MalformedJsonParameter e) {
             ApiUtil.putExceptionInResponseHeaders(responseHeaders, e);
 
             return new ResponseEntity<>(
@@ -90,12 +91,12 @@ public class UserController {
         else {
             try {
                 updatedUser = ApiUtil.getObjectMapper().readValue(jsonUser, User.class);
-                if (updatedUser.getId() != null) throw new IllegalArgumentException("Cannot specify an id in body when updating a user");
+                if (updatedUser.getId() != null) throw new MalformedJsonParameter("Cannot specify an id in body when updating a user");
                 final int existingId = foundUser.get().getId();
 
                 savedUser = userService.update(new User(existingId, updatedUser.getUsername()));
             }
-            catch (final JsonProcessingException | IllegalArgumentException e) {
+            catch (final JsonProcessingException | MalformedJsonParameter e) {
                 ApiUtil.putExceptionInResponseHeaders(responseHeaders, e);
 
                 return new ResponseEntity<>(

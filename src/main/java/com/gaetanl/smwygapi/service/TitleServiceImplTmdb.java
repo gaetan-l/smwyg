@@ -63,6 +63,34 @@ public class TitleServiceImplTmdb implements TitleService {
         return pojoTitles;
     }
 
+    @Override
+    public @NonNull Optional<Title> read(@NonNull final String id) throws URISyntaxException, IOException {
+        final String path = "/movie";
+        final String uriString = String.format("%s%s/%s?api_key=%s",
+                rootUri,
+                path,
+                id,
+                apiKey);
+
+        final WebClient client = WebClient.create();
+        final URI uri = new URI(uriString);
+
+        logger.info(uri.toString());
+        final String body = client.get()
+                .uri(uri)
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+
+        final ObjectMapper objectMapper = ApiUtil.getObjectMapper();
+        final JsonNode jsonResult = objectMapper.readTree(body);
+
+        final TmdbMovieDto dtoTitle = objectMapper.treeToValue(jsonResult, TmdbMovieDto.class);
+
+        return Optional.of(dtoToPojoTitle(dtoTitle));
+    }
+
     /**
      * Transforms a TMDB title into a proper Title with the information that
      * interest us.
@@ -74,8 +102,8 @@ public class TitleServiceImplTmdb implements TitleService {
      */
     private @NonNull Title dtoToPojoTitle(@NonNull final TmdbMovieDto dtoTitle) throws IOException, URISyntaxException {
         final Set<String> genres = new HashSet<>();
-        for (final Integer genreId: dtoTitle.genreIds) genres.add(getGenres().get(genreId)); // NOTE: Can't use a lambda here because of exception cascading
-
+        final List<Integer> dtoGenres = dtoTitle.genreIds == null ? dtoTitle.genres.stream().map(tmdbGenreDto -> tmdbGenreDto.id).toList() : dtoTitle.genreIds;
+        for (final Integer genreId: dtoGenres) genres.add(getGenres().get(genreId)); // NOTE: Can't use a lambda here because of exception cascading
         return new Title(Integer.toString(dtoTitle.id), dtoTitle.title, genres, dtoTitle.posterPath);
     }
 

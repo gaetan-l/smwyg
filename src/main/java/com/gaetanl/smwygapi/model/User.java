@@ -1,13 +1,13 @@
 package com.gaetanl.smwygapi.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.lang.NonNull;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -19,9 +19,13 @@ public class User implements ModelObject {
 
     private String username;
 
+    @ElementCollection
+    private Set<String> favorites;
+
     public User(final Integer id, final String username) {
         this.id = id;
         this.username = username;
+        this.favorites = new HashSet<>();
     }
 
     @Override
