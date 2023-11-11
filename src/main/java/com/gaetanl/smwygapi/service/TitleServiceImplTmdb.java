@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.gaetanl.smwygapi.dto.TmdbGenreDto;
+import com.gaetanl.smwygapi.dto.TmdbMovieDetailsDto;
 import com.gaetanl.smwygapi.dto.TmdbMovieDto;
+import com.gaetanl.smwygapi.dto.TmdbMovieReducedDto;
 import com.gaetanl.smwygapi.model.Title;
 import com.gaetanl.smwygapi.util.ApiUtil;
 import org.slf4j.Logger;
@@ -20,6 +22,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Primary
@@ -53,12 +56,12 @@ public class TitleServiceImplTmdb implements TitleService {
 
         final ObjectMapper objectMapper = ApiUtil.getObjectMapper();
         final JsonNode jsonResult = objectMapper.readTree(body).get("results");
-        final ObjectReader objectReader = objectMapper.readerFor(new TypeReference<ArrayList<TmdbMovieDto>>() {});
+        final ObjectReader objectReader = objectMapper.readerFor(new TypeReference<ArrayList<TmdbMovieReducedDto>>() {});
 
-        final List<TmdbMovieDto> dtoTitles = objectReader.readValue(jsonResult);
+        final List<TmdbMovieReducedDto> dtoTitles = objectReader.readValue(jsonResult);
 
         final List<Title> pojoTitles = new ArrayList<>();
-        for (final TmdbMovieDto dtoTitle: dtoTitles) pojoTitles.add(dtoToPojoTitle(dtoTitle)); // NOTE: Can't use a lambda here because of exception cascading
+        for (final TmdbMovieReducedDto dtoTitle: dtoTitles) pojoTitles.add(dtoToPojoTitle(dtoTitle)); // NOTE: Can't use a lambda here because of exception cascading
 
         return pojoTitles;
     }
@@ -86,7 +89,7 @@ public class TitleServiceImplTmdb implements TitleService {
         final ObjectMapper objectMapper = ApiUtil.getObjectMapper();
         final JsonNode jsonResult = objectMapper.readTree(body);
 
-        final TmdbMovieDto dtoTitle = objectMapper.treeToValue(jsonResult, TmdbMovieDto.class);
+        final TmdbMovieDetailsDto dtoTitle = objectMapper.treeToValue(jsonResult, TmdbMovieDetailsDto.class);
 
         return Optional.of(dtoToPojoTitle(dtoTitle));
     }
@@ -102,8 +105,7 @@ public class TitleServiceImplTmdb implements TitleService {
      */
     private @NonNull Title dtoToPojoTitle(@NonNull final TmdbMovieDto dtoTitle) throws IOException, URISyntaxException {
         final Set<String> genres = new HashSet<>();
-        final List<Integer> dtoGenres = dtoTitle.genreIds == null ? dtoTitle.genres.stream().map(tmdbGenreDto -> tmdbGenreDto.id).toList() : dtoTitle.genreIds;
-        for (final Integer genreId: dtoGenres) genres.add(getGenres().get(genreId)); // NOTE: Can't use a lambda here because of exception cascading
+        for (final Integer genreId: dtoTitle.getGenreIdsSet()) genres.add(getGenres().get(genreId)); // NOTE: Can't use a lambda here because of exception cascading
         return new Title(Integer.toString(dtoTitle.id), dtoTitle.title, genres, dtoTitle.posterPath);
     }
 

@@ -1,12 +1,11 @@
 package com.gaetanl.smwygapi.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.List;
+import java.util.Set;
 
 @SuppressWarnings("unused")
-@JsonIgnoreProperties(ignoreUnknown = true) // Tells jackson to ignore unknown properties when deserializing a JSON to a Title POJO
-public class TmdbMovieDto {
+public abstract class TmdbMovieDto {
     @JsonProperty("id")
     public int id;
 
@@ -15,7 +14,6 @@ public class TmdbMovieDto {
 
     @JsonProperty("original_title")
     public String originalTitle;
-
 
     @JsonProperty("overview")
     public String overview;
@@ -26,21 +24,11 @@ public class TmdbMovieDto {
     @JsonProperty("original_language")
     public String originalLanguage;
 
-    /*
-     * TMDB returns genre_ids when fetching /movie/popular, but genres when
-     * fetching /movie/{id}
-     */
-    @JsonProperty("genre_ids")
-    public List<Integer> genreIds;
-    @JsonProperty("genres")
-    public List<TmdbGenreDto> genres;
-
     @JsonProperty("adult")
     public boolean adult;
 
     @JsonProperty("video")
     public boolean video;
-
 
     @JsonProperty("popularity")
     public double popularity;
@@ -56,4 +44,7 @@ public class TmdbMovieDto {
 
     @JsonProperty("backdrop_path")
     public String backdropPath;
+
+    @JsonIgnore
+    public abstract Set<Integer> getGenreIdsSet();
 }
