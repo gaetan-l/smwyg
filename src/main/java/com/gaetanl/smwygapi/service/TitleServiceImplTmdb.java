@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Primary
@@ -61,7 +60,7 @@ public class TitleServiceImplTmdb implements TitleService {
         final List<TmdbMovieReducedDto> dtoTitles = objectReader.readValue(jsonResult);
 
         final List<Title> pojoTitles = new ArrayList<>();
-        for (final TmdbMovieReducedDto dtoTitle: dtoTitles) pojoTitles.add(dtoToPojoTitle(dtoTitle)); // NOTE: Can't use a lambda here because of exception cascading
+        for (final TmdbMovieReducedDto dtoTitle: dtoTitles) pojoTitles.add(dtoToModelTitle(dtoTitle)); // NOTE: Can't use a lambda here because of exception cascading
 
         return pojoTitles;
     }
@@ -91,7 +90,7 @@ public class TitleServiceImplTmdb implements TitleService {
 
         final TmdbMovieDetailsDto dtoTitle = objectMapper.treeToValue(jsonResult, TmdbMovieDetailsDto.class);
 
-        return Optional.of(dtoToPojoTitle(dtoTitle));
+        return Optional.of(dtoToModelTitle(dtoTitle));
     }
 
     /**
@@ -103,7 +102,7 @@ public class TitleServiceImplTmdb implements TitleService {
      * @throws IOException        during Jackson deserialization
      * @throws URISyntaxException during API call URI building
      */
-    private @NonNull Title dtoToPojoTitle(@NonNull final TmdbMovieDto dtoTitle) throws IOException, URISyntaxException {
+    private @NonNull Title dtoToModelTitle(@NonNull final TmdbMovieDto dtoTitle) throws IOException, URISyntaxException {
         final Set<String> genres = new HashSet<>();
         for (final Integer genreId: dtoTitle.getGenreIdsSet()) genres.add(getGenres().get(genreId)); // NOTE: Can't use a lambda here because of exception cascading
         return new Title(Integer.toString(dtoTitle.id), dtoTitle.title, genres, dtoTitle.posterPath);
