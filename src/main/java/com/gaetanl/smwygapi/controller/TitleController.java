@@ -6,11 +6,11 @@ import com.gaetanl.smwygapi.util.ApiUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import static org.springframework.http.HttpStatus.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -32,34 +32,39 @@ public class TitleController {
      */
     @CrossOrigin(origins = "http://localhost")
     @GetMapping("/title")
-    public @NonNull ResponseEntity<String> readAll(@RequestParam(required = false) final Integer page) {
+    public @NonNull ResponseEntity<String> readAll(@RequestParam(required = false) final String order, @RequestParam(required = false) final Integer page) {
         final HttpHeaders responseHeaders = new HttpHeaders();
         final List<Title> titles;
 
+        String body = "[]";
+        HttpStatus httpStatus = OK;
+        Exception exception = null;
+
         try {
-            titles = titleService.readAll(page);
+            final Title.TitleIndex index = order == null ? null : Title.TitleIndex.valueOf(order.toUpperCase()); // throws IllegalArgumentException, NullPointerException
+            titles = titleService.readAll(index, page);
+            body = ApiUtil.getObjectAsPrettyJson(titles, "[]", responseHeaders);
+        }
+        catch (final IllegalArgumentException | NullPointerException e) {
+            exception = e;
+            httpStatus = BAD_REQUEST;
         }
         catch (final WebClientResponseException | URISyntaxException e) {
-            ApiUtil.putExceptionInResponseHeaders(responseHeaders, e);
-
-            return new ResponseEntity<>(
-                    "[]",
-                    responseHeaders,
-                    HttpStatus.NOT_FOUND);
+            exception = e;
+            httpStatus = NOT_FOUND;
         }
         catch (final IOException e) {
-            ApiUtil.putExceptionInResponseHeaders(responseHeaders, e);
-
-            return new ResponseEntity<>(
-                    "[]",
-                    responseHeaders,
-                    HttpStatus.INTERNAL_SERVER_ERROR);
+            exception = e;
+            httpStatus = INTERNAL_SERVER_ERROR;
+        }
+        finally {
+            if (exception != null) ApiUtil.putExceptionInResponseHeaders(responseHeaders, exception);
         }
 
         return new ResponseEntity<>(
-                ApiUtil.getObjectAsPrettyJson(titles, "[]", responseHeaders),
+                body,
                 responseHeaders,
-                HttpStatus.OK);
+                httpStatus);
     }
 
     /**
@@ -70,33 +75,31 @@ public class TitleController {
     public @NonNull ResponseEntity<String> read(@PathVariable("id") @NonNull final String id) {
         final HttpHeaders responseHeaders = new HttpHeaders();
         final Optional<Title> foundTitle;
-        final String jsonTitle;
+
+        String body = "{}";
+        HttpStatus httpStatus = OK;
+        Exception exception = null;
 
         try {
             foundTitle = titleService.read(id);
             if (foundTitle.isEmpty()) throw new IllegalArgumentException(String.format("{Title with id=%s} not found", id));
-            jsonTitle = ApiUtil.getObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(foundTitle.get());
+            body = ApiUtil.getObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(foundTitle.get());
         }
         catch (final WebClientResponseException | URISyntaxException | IllegalArgumentException e) {
-            ApiUtil.putExceptionInResponseHeaders(responseHeaders, e);
-
-            return new ResponseEntity<>(
-                    "{}",
-                    responseHeaders,
-                    HttpStatus.NOT_FOUND);
+            exception = e;
+            httpStatus = NOT_FOUND;
         }
         catch (final IOException e) {
-            ApiUtil.putExceptionInResponseHeaders(responseHeaders, e);
-
-            return new ResponseEntity<>(
-                    "{}",
-                    responseHeaders,
-                    HttpStatus.INTERNAL_SERVER_ERROR);
+            exception = e;
+            httpStatus = INTERNAL_SERVER_ERROR;
+        }
+        finally {
+            if (exception != null) ApiUtil.putExceptionInResponseHeaders(responseHeaders, exception);
         }
 
         return new ResponseEntity<>(
-                jsonTitle,
+                body,
                 responseHeaders,
-                HttpStatus.OK);
+                httpStatus);
     }
 }

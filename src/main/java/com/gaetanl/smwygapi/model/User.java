@@ -19,6 +19,7 @@ public class User implements ModelObject {
 
     private String username;
 
+    // TODO: Should this be a Set<Title> ?
     @ElementCollection
     private Set<String> favorites;
 
@@ -32,5 +33,14 @@ public class User implements ModelObject {
     @JsonIgnore
     public @NonNull String getIdAsString() {
         return String.valueOf(id);
+    }
+
+
+
+    // Indexes
+    @SuppressWarnings("unused") // Indexes are instanced using strings passed to rest controllers
+    public enum UserIndex implements ModelIndex<User> {
+        ID {@Override public String getIndexedValue(final User objectToIndex) {return String.valueOf(objectToIndex.id);}},
+        USERNAME {@Override public String getIndexedValue(final User objectToIndex) {return objectToIndex.username;}}
     }
 }

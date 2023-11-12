@@ -17,9 +17,10 @@ import java.util.Optional;
  * a @Primary annotation, which is why it is chosen instead of this class.
  */
 @Service
+@SuppressWarnings("all") // This is an example class not meant to be used, see doc above
 public class TitleServiceImplOther implements TitleService {
     @Override
-    public @NonNull List<Title> readAll(@Nullable final Integer page) throws URISyntaxException, IOException {
+    public @NonNull List<Title> readAll(@Nullable final Title.TitleIndex index, @Nullable final Integer page) throws URISyntaxException, IOException {
         return new ArrayList<>();
     }
 

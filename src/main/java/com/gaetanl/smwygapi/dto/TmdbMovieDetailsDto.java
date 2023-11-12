@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@SuppressWarnings("unused")
+@SuppressWarnings("unused") // Used implicitly by Jackson
 @JsonIgnoreProperties(ignoreUnknown = true) // Tells jackson to ignore unknown properties when deserializing a JSON to a Title POJO
 public class TmdbMovieDetailsDto extends TmdbMovieDto {
     @JsonProperty("mdb_id")
@@ -19,8 +19,14 @@ public class TmdbMovieDetailsDto extends TmdbMovieDto {
     @JsonProperty("spoken_languages")
     public List<Language> spokenLanguages;
 */
+    /*
+     * About field being public and @SuppressWarnings("WeakerAccess") :
+     * Voluntary lack of safety on DTO classes for ease of use and code
+     * readability. This warning appears because field is returned in
+     * {@link com.gaetanl.smwygapi.dto.TmdbMovieDto#getGenreIdsSet()}
+     */
     @JsonProperty("genres")
-    @SuppressWarnings("WeakerAccess")
+    @SuppressWarnings("WeakerAccess") // Voluntary lack of safety on DTO (see above)
     public List<TmdbGenreDto> genres;
 
     @JsonProperty("runtime")

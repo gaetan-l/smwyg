@@ -10,6 +10,7 @@ import com.gaetanl.smwygapi.dto.TmdbMovieDto;
 import com.gaetanl.smwygapi.dto.TmdbMovieReducedDto;
 import com.gaetanl.smwygapi.model.Title;
 import com.gaetanl.smwygapi.util.ApiUtil;
+import com.gaetanl.smwygapi.util.ModelObjectIndexer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Primary;
@@ -29,12 +30,13 @@ public class TitleServiceImplTmdb implements TitleService {
     private static final Logger logger = LoggerFactory.getLogger(TitleServiceImplTmdb.class);
 
     private final Map<Integer, String> inMemoryGenres = new HashMap<>();
+    private final ModelObjectIndexer<Title> titleIndexer = new ModelObjectIndexer<>();
 
     private final String apiKey = "91b96d8d3dc851fb01aa9a36e8c81880"; // TODO: externalize
     private final String rootUri = "https://api.themoviedb.org/3";
 
     @Override
-    public @NonNull List<Title> readAll(@Nullable final Integer page) throws URISyntaxException, IOException {
+    public @NonNull List<Title> readAll(@Nullable final Title.TitleIndex index, @Nullable final Integer page) throws URISyntaxException, IOException {
         final String path = "/movie/popular";
         final String uriString = String.format("%s%s?api_key=%s%s",
                 rootUri,
@@ -62,7 +64,7 @@ public class TitleServiceImplTmdb implements TitleService {
         final List<Title> pojoTitles = new ArrayList<>();
         for (final TmdbMovieReducedDto dtoTitle: dtoTitles) pojoTitles.add(dtoToModelTitle(dtoTitle)); // NOTE: Can't use a lambda here because of exception cascading
 
-        return pojoTitles;
+        return index == null ? pojoTitles : titleIndexer.orderListByIndex(pojoTitles, index);
     }
 
     @Override

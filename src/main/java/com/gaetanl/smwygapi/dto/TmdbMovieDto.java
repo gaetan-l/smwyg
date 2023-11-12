@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Set;
 
-@SuppressWarnings("unused")
+@SuppressWarnings("unused") // Used implicitly by Jackson
 public abstract class TmdbMovieDto {
     @JsonProperty("id")
     public int id;

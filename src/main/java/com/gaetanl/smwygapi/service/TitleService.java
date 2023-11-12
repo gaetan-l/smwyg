@@ -12,13 +12,14 @@ public interface TitleService {
     /**
      * Returns a list of titles.
      *
+     * @param  index               the index used to order the results
      * @param  page                the page of result to return, defaults to 1
      *                             if empty
      * @return                     a list of titles
      * @throws IOException         during Jackson deserialization
      * @throws URISyntaxException  during API call URI building
      */
-    @NonNull List<Title> readAll(@Nullable Integer page) throws URISyntaxException, IOException;
+    @NonNull List<Title> readAll(@Nullable final Title.TitleIndex index, @Nullable final Integer page) throws URISyntaxException, IOException;
 
     /**
      * Returns a title.

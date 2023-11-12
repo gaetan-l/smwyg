@@ -8,6 +8,7 @@ import com.gaetanl.smwygapi.util.MalformedJsonParameter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import static org.springframework.http.HttpStatus.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
@@ -26,24 +27,28 @@ public class UserController {
         final HttpHeaders responseHeaders = new HttpHeaders();
         final User newUser, savedUser;
 
+        String body = "{}";
+        HttpStatus httpStatus = CREATED;
+        Exception exception = null;
+
         try {
             newUser = ApiUtil.getObjectMapper().readValue(jsonUser, User.class);
             if (newUser.getId() != null) throw new MalformedJsonParameter("Cannot specify an id in body when creating a user");
             savedUser = userService.create(newUser);
+            body = ApiUtil.getObjectAsPrettyJson(savedUser, "{}", responseHeaders);
         }
         catch (final JsonProcessingException | MalformedJsonParameter e) {
-            ApiUtil.putExceptionInResponseHeaders(responseHeaders, e);
-
-            return new ResponseEntity<>(
-                    "{}",
-                    responseHeaders,
-                    HttpStatus.BAD_REQUEST);
+            exception = e;
+            httpStatus = BAD_REQUEST;
+        }
+        finally {
+            if (exception != null) ApiUtil.putExceptionInResponseHeaders(responseHeaders, exception);
         }
 
         return new ResponseEntity<>(
-                ApiUtil.getObjectAsPrettyJson(savedUser, "{}", responseHeaders),
+                body,
                 responseHeaders,
-                HttpStatus.CREATED);
+                httpStatus);
     }
 
     @GetMapping("/user/{id}")
@@ -55,13 +60,13 @@ public class UserController {
             return new ResponseEntity<>(
                     "{}",
                     responseHeaders,
-                    HttpStatus.NOT_FOUND);
+                    NOT_FOUND);
         }
         else {
             return new ResponseEntity<>(
                     ApiUtil.getObjectAsPrettyJson(foundUser.get(), "{}", responseHeaders),
                     responseHeaders,
-                    HttpStatus.OK);
+                    OK);
         }
     }
 
@@ -82,11 +87,12 @@ public class UserController {
         final Optional<User> foundUser = userService.read(id);
         final User updatedUser, savedUser;
 
+        String body = "{}";
+        HttpStatus httpStatus = OK;
+        Exception exception = null;
+
         if (foundUser.isEmpty()) {
-            return new ResponseEntity<>(
-                    "{}",
-                    responseHeaders,
-                    HttpStatus.NOT_FOUND);
+            httpStatus = NOT_FOUND;
         }
         else {
             try {
@@ -95,21 +101,21 @@ public class UserController {
                 final int existingId = foundUser.get().getId();
 
                 savedUser = userService.update(new User(existingId, updatedUser.getUsername()));
+                body = ApiUtil.getObjectAsPrettyJson(savedUser, "{}", responseHeaders);
             }
             catch (final JsonProcessingException | MalformedJsonParameter e) {
-                ApiUtil.putExceptionInResponseHeaders(responseHeaders, e);
-
-                return new ResponseEntity<>(
-                        "{}",
-                        responseHeaders,
-                        HttpStatus.BAD_REQUEST);
+                exception = e;
+                httpStatus = BAD_REQUEST;
             }
-
-            return new ResponseEntity<>(
-                    ApiUtil.getObjectAsPrettyJson(savedUser, "{}", responseHeaders),
-                    responseHeaders,
-                    HttpStatus.OK);
+            finally {
+                if (exception != null) ApiUtil.putExceptionInResponseHeaders(responseHeaders, exception);
+            }
         }
+
+        return new ResponseEntity<>(
+                body,
+                responseHeaders,
+                httpStatus);
     }
 
     @DeleteMapping("/user/{id}")

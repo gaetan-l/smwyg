@@ -41,4 +41,13 @@ public class Title implements ModelObject {
     public @NonNull String getIdAsString() {
         return id;
     }
+
+
+
+    // Indexes
+    @SuppressWarnings("unused") // Indexes are instanced using strings passed to rest controllers
+    public enum TitleIndex implements ModelIndex<Title> {
+        ID {@Override public String getIndexedValue(final Title objectToIndex) {return objectToIndex.id;}},
+        NAME {@Override public String getIndexedValue(final Title objectToIndex) {return objectToIndex.name;}}
+    }
 }
