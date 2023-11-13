@@ -30,7 +30,12 @@ public class TitleServiceImplOther implements TitleService {
     }
 
     @Override
-    public @NonNull List<Title> readAllByGenres(Title.TitleIndex index, Integer page, Set<String> genres) throws URISyntaxException, IOException {
+    public @NonNull List<Title> readAllByGenres(Title.TitleIndex index, Integer page, Set<Genre> genres) throws URISyntaxException, IOException {
+        return null;
+    }
+
+    @Override
+    public Genre getGenre(int id) throws URISyntaxException, IOException {
         return null;
     }
 

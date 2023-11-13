@@ -1,5 +1,6 @@
 package com.gaetanl.smwygapi.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,10 +21,13 @@ import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Primary
@@ -84,21 +88,35 @@ public class TitleServiceImplTmdb implements TitleService {
                     .bodyToMono(String.class)
                     .block();
 
-        final ObjectMapper objectMapper = ApiUtil.getObjectMapper();
-        final JsonNode jsonResult = objectMapper.readTree(body).get("results");
-        final ObjectReader objectReader = objectMapper.readerFor(new TypeReference<ArrayList<TmdbMovieReducedDto>>() {});
-
-        final List<TmdbMovieReducedDto> dtoTitles = objectReader.readValue(jsonResult);
-
-        final List<Title> pojoTitles = new ArrayList<>();
-        for (final TmdbMovieReducedDto dtoTitle: dtoTitles) pojoTitles.add(dtoToModelTitle(dtoTitle)); // NOTE: Can't use a lambda here because of exception cascading
+        final List<Title> pojoTitles = blockToTitleList(body);
 
         return index == null ? pojoTitles : titleIndexer.orderListByIndex(pojoTitles, index);
     }
 
     @Override
-    public @NonNull List<Title> readAllByGenres(Title.TitleIndex index, Integer page, Set<String> genres) throws URISyntaxException, IOException {
-        return null;
+    public @NonNull List<Title> readAllByGenres(@Nullable final Title.TitleIndex index, @Nullable final Integer page, @NonNull final Set<Genre> genres) throws URISyntaxException, IOException {
+        final String path = "/discover/movie";
+        final String uriString = String.format("%s%s?api_key=%s%s%s",
+                rootUri,
+                path,
+                apiKey,
+                "&with_genres=" + String.join(",", genres.stream().map(genre -> String.valueOf(genre.getId())).collect(Collectors.toSet())),
+                page == null ? "" : "&page=" + page);
+
+        final WebClient client = WebClient.create();
+        final URI uri = new URI(uriString);
+
+        logger.info(uri.toString());
+        final String body = client.get()
+                .uri(uri)
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+
+        final List<Title> pojoTitles = blockToTitleList(body);
+
+        return index == null ? pojoTitles : titleIndexer.orderListByIndex(pojoTitles, index);
     }
 
     /**
@@ -155,5 +173,32 @@ public class TitleServiceImplTmdb implements TitleService {
         }
 
         return inMemoryGenres;
+    }
+
+    @Override
+    public @NonNull Genre getGenre(final int id) throws IOException, URISyntaxException {
+        return getGenres().get(id);
+    }
+
+    /**
+     * Returns the result of a Mono<String> WebClient.get() as a list of titles.
+     *
+     * @param  block               the Mono<String> block returned by the
+     *                             WebClient.get()
+     * @return                     the list of titles
+     * @throws IOException         during Jackson deserialization
+     * @throws URISyntaxException  during API call URI building
+     */
+    private @NonNull List<Title> blockToTitleList(final String block) throws IOException, URISyntaxException {
+        final ObjectMapper objectMapper = ApiUtil.getObjectMapper();
+        final JsonNode jsonResult = objectMapper.readTree(block).get("results");
+        final ObjectReader objectReader = objectMapper.readerFor(new TypeReference<ArrayList<TmdbMovieReducedDto>>() {});
+
+        final List<TmdbMovieReducedDto> dtoTitles = objectReader.readValue(jsonResult);
+
+        final List<Title> pojoTitles = new ArrayList<>();
+        for (final TmdbMovieReducedDto dtoTitle: dtoTitles) pojoTitles.add(dtoToModelTitle(dtoTitle)); // NOTE: Can't use a lambda here because of exception cascading
+
+        return pojoTitles;
     }
 }

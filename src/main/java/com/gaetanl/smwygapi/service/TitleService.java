@@ -45,6 +45,7 @@ public interface TitleService {
      * @throws IOException         during Jackson deserialization
      * @throws URISyntaxException  during API call URI building
      */
-    @NonNull List<Title> readAllByGenres(@Nullable final Title.TitleIndex index, @Nullable final Integer page, @NonNull final Set<String> genres
-    ) throws URISyntaxException, IOException;
+    @NonNull List<Title> readAllByGenres(@Nullable final Title.TitleIndex index, @Nullable final Integer page, @NonNull final Set<Genre> genres) throws URISyntaxException, IOException;
+
+    @NonNull Genre getGenre(final int id) throws URISyntaxException, IOException;
 }
