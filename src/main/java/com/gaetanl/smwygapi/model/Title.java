@@ -11,25 +11,21 @@ import lombok.Setter;
 import org.springframework.lang.NonNull;
 import java.util.Set;
 
-@Entity
 @Getter
 @NoArgsConstructor
 public class Title implements ModelObject {
     @Id
     private String id;
 
-    @Setter
     private String name;
 
     @Setter
-    @ElementCollection
-    @CollectionTable
-    private Set<String> genres;
+    private Set<Genre> genres;
 
     @Setter
     private String pictureUri;
 
-    public Title(final String id, final String name, final Set<String> genres, final String pictureUri) {
+    public Title(final String id, final String name, final Set<Genre> genres, final String pictureUri) {
         this.id = id;
         this.name = name;
         this.genres = genres;

@@ -21,9 +21,9 @@ public class User implements ModelObject {
 
     // TODO: Should this be a Set<Title> ?
     @ElementCollection
-    private Set<String> favorites;
+    private Set<String> favorites = new HashSet<>();
 
-    public User(final Integer id, final String username) {
+    public User(@NonNull final Integer id, @NonNull final String username) {
         this.id = id;
         this.username = username;
         this.favorites = new HashSet<>();
