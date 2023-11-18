@@ -1,5 +1,6 @@
 package com.gaetanl.smwygapi.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.ElementCollection;
@@ -9,6 +10,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.lang.NonNull;
+
+import java.time.LocalDate;
 import java.util.Set;
 
 @Getter
@@ -17,7 +20,18 @@ public class Title implements ModelObject {
     @Id
     private String id;
 
+    @Setter
     private String name;
+
+    @Setter
+    @JsonFormat(pattern = "dd/MM/yyyy", timezone = "UTC")
+    LocalDate releaseDate;
+
+    @Setter
+    String language;
+
+    @Setter
+    Boolean adult;
 
     @Setter
     private Set<Genre> genres;
@@ -25,11 +39,8 @@ public class Title implements ModelObject {
     @Setter
     private String pictureUri;
 
-    public Title(final String id, final String name, final Set<Genre> genres, final String pictureUri) {
+    public Title(@NonNull final String id) {
         this.id = id;
-        this.name = name;
-        this.genres = genres;
-        this.pictureUri = pictureUri;
     }
 
     @Override

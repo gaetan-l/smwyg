@@ -10,7 +10,9 @@ import com.gaetanl.smwygapi.dto.TmdbMovieDetailsDto;
 import com.gaetanl.smwygapi.dto.TmdbMovieDto;
 import com.gaetanl.smwygapi.dto.TmdbMovieReducedDto;
 import com.gaetanl.smwygapi.model.Genre;
+import com.gaetanl.smwygapi.model.SimilarityProfile;
 import com.gaetanl.smwygapi.model.Title;
+import com.gaetanl.smwygapi.model.User;
 import com.gaetanl.smwygapi.util.ApiUtil;
 import com.gaetanl.smwygapi.util.ModelObjectIndexer;
 import org.slf4j.Logger;
@@ -26,6 +28,7 @@ import reactor.core.publisher.Mono;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -131,7 +134,14 @@ public class TitleServiceImplTmdb implements TitleService {
     private @NonNull Title dtoToModelTitle(@NonNull final TmdbMovieDto dtoTitle) throws IOException, URISyntaxException {
         final Set<Genre> genres = new HashSet<>();
         for (final Integer genreId: dtoTitle.getGenreIdsSet()) genres.add(getGenres().get(genreId)); // NOTE: Can't use a lambda here because of exception cascading
-        return new Title(Integer.toString(dtoTitle.id), dtoTitle.title, genres, dtoTitle.posterPath);
+        final Title title = new Title(Integer.toString(dtoTitle.id));
+        title.setName(dtoTitle.title);
+        title.setReleaseDate(LocalDate.parse(dtoTitle.release_date));
+        title.setLanguage(dtoTitle.originalLanguage);
+        title.setAdult(dtoTitle.adult);
+        title.setGenres(genres);
+        title.setPictureUri(dtoTitle.posterPath);
+        return title;
     }
 
     /**
@@ -200,5 +210,33 @@ public class TitleServiceImplTmdb implements TitleService {
         for (final TmdbMovieReducedDto dtoTitle: dtoTitles) pojoTitles.add(dtoToModelTitle(dtoTitle)); // NOTE: Can't use a lambda here because of exception cascading
 
         return pojoTitles;
+    }
+
+    /**
+     * Builds and returns an object listing parameters shared by the favorite
+     * titles of a user. Used to find titles that may appeal to that user.
+     *
+     * @param  user  the user whose titles to explore
+     * @return       the similarity profile of the user
+     */
+    public @NonNull SimilarityProfile getSimilarityProfile(@NonNull final User user) throws URISyntaxException, IOException, NoSuchElementException {
+        final SimilarityProfile sp = new SimilarityProfile();
+
+        final Set<String> favoriteIds = user.getFavorites();
+        for (final String favoriteId: favoriteIds) {
+            final Optional<Title> optionalTitle = read(favoriteId);
+            if (optionalTitle.isEmpty()) throw new NoSuchElementException("No value present");
+            final Title favorite = optionalTitle.get();
+
+            final int releaseDecade = Math.round((float) favorite.getReleaseDate().getYear() / 10) * 10;
+            sp.getReleaseDecade().increase(releaseDecade);
+
+            sp.getLanguage().increase(favorite.getLanguage());
+            sp.getAdult().increase(favorite.getAdult());
+
+            for (final Genre genre: favorite.getGenres()) sp.getGenres().increase(genre.getName());
+        }
+
+        return sp;
     }
 }

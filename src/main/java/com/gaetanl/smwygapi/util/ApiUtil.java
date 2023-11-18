@@ -2,6 +2,7 @@ package com.gaetanl.smwygapi.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.gaetanl.smwygapi.model.ModelObject;
 import lombok.Getter;
 import org.slf4j.Logger;
@@ -12,7 +13,7 @@ public final class ApiUtil {
     private ApiUtil() {}
 
     @Getter
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper objectMapper = (new ObjectMapper()).registerModule(new JavaTimeModule());
 
     /**
      * Adds a given exception to an HTTP header with the following structure:

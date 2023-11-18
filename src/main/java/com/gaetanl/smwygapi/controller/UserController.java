@@ -1,9 +1,13 @@
 package com.gaetanl.smwygapi.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.gaetanl.smwygapi.model.SimilarityParameter;
+import com.gaetanl.smwygapi.model.SimilarityProfile;
 import com.gaetanl.smwygapi.model.User;
+import com.gaetanl.smwygapi.service.TitleService;
 import com.gaetanl.smwygapi.service.UserService;
 import com.gaetanl.smwygapi.util.ApiUtil;
+import com.gaetanl.smwygapi.util.EntityNotFoundException;
 import com.gaetanl.smwygapi.util.MalformedJsonParameter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -12,6 +16,9 @@ import static org.springframework.http.HttpStatus.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +26,9 @@ import java.util.Optional;
 public class UserController {
     @Autowired
     UserService userService;
+
+    @Autowired
+    TitleService titleService; // TODO: delete
 
     // TODO: add endpoint logIn()?
     // TODO: replace with signUp()?
@@ -98,9 +108,12 @@ public class UserController {
             try {
                 updatedUser = ApiUtil.getObjectMapper().readValue(jsonUser, User.class);
                 if (updatedUser.getId() != null) throw new MalformedJsonParameter("Cannot specify an id in body when updating a user");
-                final int existingId = foundUser.get().getId();
+                if (!updatedUser.getFavorites().isEmpty()) throw new MalformedJsonParameter("Cannot specify favorites in body when updating a user");
 
-                savedUser = userService.update(new User(existingId, updatedUser.getUsername()));
+                final User existingUser = foundUser.get();
+                existingUser.setUsername(updatedUser.getUsername());
+
+                savedUser = userService.update(existingUser);
                 body = ApiUtil.getObjectAsPrettyJson(savedUser, "{}", responseHeaders);
             }
             catch (final JsonProcessingException | MalformedJsonParameter e) {
@@ -137,5 +150,37 @@ public class UserController {
                     responseHeaders,
                     HttpStatus.OK);
         }
+    }
+
+    @GetMapping("/user/{id}/similarityProfile")
+    public @NonNull ResponseEntity<String> readSimProfile(@PathVariable("id") final int id) {
+        final HttpHeaders responseHeaders = new HttpHeaders();
+        final Optional<User> foundUser = userService.read(id);
+
+        String body = "{}";
+        HttpStatus httpStatus = OK;
+        Exception exception = null;
+
+        try {
+            if (foundUser.isEmpty()) throw new EntityNotFoundException(User.class, String.valueOf(id));
+            final SimilarityProfile sp = titleService.getSimilarityProfile(foundUser.get());
+            body = ApiUtil.getObjectAsPrettyJson(sp, "{}", responseHeaders);
+        }
+        catch (final URISyntaxException | EntityNotFoundException e) {
+            exception = e;
+            httpStatus = NOT_FOUND;
+        }
+        catch (final IOException e) {
+            exception = e;
+            httpStatus = INTERNAL_SERVER_ERROR;
+        }
+        finally {
+            if (exception != null) ApiUtil.putExceptionInResponseHeaders(responseHeaders, exception);
+        }
+
+        return new ResponseEntity<>(
+                body,
+                responseHeaders,
+                httpStatus);
     }
 }

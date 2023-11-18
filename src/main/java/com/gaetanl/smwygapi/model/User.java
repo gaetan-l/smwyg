@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.lang.NonNull;
 
 import java.util.HashSet;
@@ -17,6 +18,7 @@ public class User implements ModelObject {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
+    @Setter
     private String username;
 
     // TODO: Should this be a Set<Title> ?

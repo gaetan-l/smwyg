@@ -1,15 +1,14 @@
 package com.gaetanl.smwygapi.service;
 
 import com.gaetanl.smwygapi.model.Genre;
+import com.gaetanl.smwygapi.model.SimilarityProfile;
 import com.gaetanl.smwygapi.model.Title;
+import com.gaetanl.smwygapi.model.User;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 public interface TitleService {
     /**
@@ -48,4 +47,6 @@ public interface TitleService {
     @NonNull List<Title> readAllByGenres(@Nullable final Title.TitleIndex index, @Nullable final Integer page, @NonNull final Set<Genre> genres) throws URISyntaxException, IOException;
 
     @NonNull Genre getGenre(final int id) throws URISyntaxException, IOException;
+
+    @NonNull SimilarityProfile getSimilarityProfile(@NonNull final User user) throws URISyntaxException, IOException, NoSuchElementException;
 }

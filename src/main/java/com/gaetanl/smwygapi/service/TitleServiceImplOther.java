@@ -1,7 +1,9 @@
 package com.gaetanl.smwygapi.service;
 
 import com.gaetanl.smwygapi.model.Genre;
+import com.gaetanl.smwygapi.model.SimilarityProfile;
 import com.gaetanl.smwygapi.model.Title;
+import com.gaetanl.smwygapi.model.User;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
@@ -35,7 +37,12 @@ public class TitleServiceImplOther implements TitleService {
     }
 
     @Override
-    public Genre getGenre(int id) throws URISyntaxException, IOException {
+    public @NonNull Genre getGenre(int id) throws URISyntaxException, IOException {
+        return null;
+    }
+
+    @Override
+    public SimilarityProfile getSimilarityProfile(User user) throws URISyntaxException, IOException, NoSuchElementException {
         return null;
     }
 
