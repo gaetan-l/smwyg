@@ -37,12 +37,12 @@ public class TitleServiceImplOther implements TitleService {
     }
 
     @Override
-    public @NonNull Genre getGenre(int id) throws URISyntaxException, IOException {
+    public @NonNull Genre readGenre(int id) throws URISyntaxException, IOException {
         return null;
     }
 
     @Override
-    public SimilarityProfile getSimilarityProfile(User user) throws URISyntaxException, IOException, NoSuchElementException {
+    public @NonNull List<Title> readSimilar(@NonNull String id, @Nullable final Title.TitleIndex index, @Nullable final Integer page) throws URISyntaxException, IOException {
         return null;
     }
 

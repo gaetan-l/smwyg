@@ -84,12 +84,57 @@ public class TitleController {
             if (genres.isPresent()) {
                 final Set<String> genresIdsSet = new HashSet<>(Arrays.asList(genres.get().split(",")));
                 final Set<Genre> genresSet = new HashSet<>();
-                for (final String genreId: genresIdsSet) genresSet.add(titleService.getGenre(Integer.parseInt(genreId)));
+                for (final String genreId: genresIdsSet) genresSet.add(titleService.readGenre(Integer.parseInt(genreId)));
                 titles = titleService.readAllByGenres(index, page, genresSet);
             }
             else {
                 titles = titleService.readAll(index, page);
             }
+            body = ApiUtil.getObjectAsPrettyJson(titles, "[]", responseHeaders);
+        }
+        catch (final IllegalArgumentException | NullPointerException | NoSuchElementException e) {
+            exception = e;
+            httpStatus = BAD_REQUEST;
+        }
+        catch (final WebClientResponseException | URISyntaxException e) {
+            exception = e;
+            httpStatus = NOT_FOUND;
+        }
+        catch (final IOException e) {
+            exception = e;
+            httpStatus = INTERNAL_SERVER_ERROR;
+        }
+        finally {
+            if (exception != null) ApiUtil.putExceptionInResponseHeaders(responseHeaders, exception);
+        }
+
+        return new ResponseEntity<>(
+                body,
+                responseHeaders,
+                httpStatus);
+    }
+
+    /**
+     * Reads titles similar to the one which id is specified.
+     *
+     * @return a list of similar titles
+     */
+    @CrossOrigin(origins = "http://localhost")
+    @GetMapping("/title/{id}/similar")
+    public @NonNull ResponseEntity<String> readSimilar(
+            @PathVariable("id") @NonNull final String id,
+            @RequestParam(required = false) final String order,
+            @RequestParam(required = false) final Integer page) {
+        final HttpHeaders responseHeaders = new HttpHeaders();
+        final List<Title> titles;
+
+        String body = "[]";
+        HttpStatus httpStatus = OK;
+        Exception exception = null;
+
+        try {
+            final Title.TitleIndex index = order == null ? null : Title.TitleIndex.valueOf(order.toUpperCase()); // throws IllegalArgumentException, NullPointerException
+            titles = titleService.readSimilar(id, index, page);
             body = ApiUtil.getObjectAsPrettyJson(titles, "[]", responseHeaders);
         }
         catch (final IllegalArgumentException | NullPointerException | NoSuchElementException e) {

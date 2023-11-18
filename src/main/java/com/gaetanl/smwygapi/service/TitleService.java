@@ -46,7 +46,25 @@ public interface TitleService {
      */
     @NonNull List<Title> readAllByGenres(@Nullable final Title.TitleIndex index, @Nullable final Integer page, @NonNull final Set<Genre> genres) throws URISyntaxException, IOException;
 
-    @NonNull Genre getGenre(final int id) throws URISyntaxException, IOException;
+    /**
+     * Returns a genre.
+     *
+     * @param  id                  the id of the genre to return
+     * @return                     the genre corresponding to the id
+     * @throws IOException         during Jackson deserialization
+     * @throws URISyntaxException  during API call URI building
+     */
+    @NonNull Genre readGenre(final int id) throws URISyntaxException, IOException;
 
-    @NonNull SimilarityProfile getSimilarityProfile(@NonNull final User user) throws URISyntaxException, IOException, NoSuchElementException;
+    /**
+     * Returns titles similar to the one specified.
+     *
+     * @param  id                  the id of title of reference
+     * @param  index               the index used to order the results
+     * @param  page                the page of result to return, defaults to 1
+     * @return                     a list of similar titles
+     * @throws IOException         during Jackson deserialization
+     * @throws URISyntaxException  during API call URI building
+     */
+    @NonNull List<Title> readSimilar(@NonNull final String id, @Nullable final Title.TitleIndex index, @Nullable final Integer page) throws URISyntaxException, IOException;
 }

@@ -1,6 +1,5 @@
 package com.gaetanl.smwygapi.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,12 +22,11 @@ import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -122,6 +120,35 @@ public class TitleServiceImplTmdb implements TitleService {
         return index == null ? pojoTitles : titleIndexer.orderListByIndex(pojoTitles, index);
     }
 
+    @Override
+    public @NonNull Genre readGenre(final int id) throws IOException, URISyntaxException {
+        return getGenres().get(id);
+    }
+
+    @Override
+    public @NonNull List<Title> readSimilar(@NonNull final String id, @Nullable final Title.TitleIndex index, @Nullable final Integer page) throws URISyntaxException, IOException {
+        final String path = String.format("/movie/%s/similar", id);
+        final String uriString = String.format("%s%s?api_key=%s",
+                rootUri,
+                path,
+                apiKey);
+
+        final WebClient client = WebClient.create();
+        final URI uri = new URI(uriString);
+
+        logger.info(uri.toString());
+        final String body = client.get()
+                .uri(uri)
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+
+        final List<Title> pojoTitles = blockToTitleList(body);
+
+        return index == null ? pojoTitles : titleIndexer.orderListByIndex(pojoTitles, index);
+    }
+
     /**
      * Transforms a TMDB title into a proper Title with the information that
      * interest us.
@@ -136,7 +163,7 @@ public class TitleServiceImplTmdb implements TitleService {
         for (final Integer genreId: dtoTitle.getGenreIdsSet()) genres.add(getGenres().get(genreId)); // NOTE: Can't use a lambda here because of exception cascading
         final Title title = new Title(Integer.toString(dtoTitle.id));
         title.setName(dtoTitle.title);
-        title.setReleaseDate(LocalDate.parse(dtoTitle.release_date));
+        try {title.setReleaseDate(LocalDate.parse(dtoTitle.release_date));} catch (final DateTimeParseException e) {title.setReleaseDate(null);}
         title.setLanguage(dtoTitle.originalLanguage);
         title.setAdult(dtoTitle.adult);
         title.setGenres(genres);
@@ -185,11 +212,6 @@ public class TitleServiceImplTmdb implements TitleService {
         return inMemoryGenres;
     }
 
-    @Override
-    public @NonNull Genre getGenre(final int id) throws IOException, URISyntaxException {
-        return getGenres().get(id);
-    }
-
     /**
      * Returns the result of a Mono<String> WebClient.get() as a list of titles.
      *
@@ -219,7 +241,7 @@ public class TitleServiceImplTmdb implements TitleService {
      * @param  user  the user whose titles to explore
      * @return       the similarity profile of the user
      */
-    public @NonNull SimilarityProfile getSimilarityProfile(@NonNull final User user) throws URISyntaxException, IOException, NoSuchElementException {
+    private @NonNull SimilarityProfile getSimilarityProfile(@NonNull final User user) throws URISyntaxException, IOException, NoSuchElementException {
         final SimilarityProfile sp = new SimilarityProfile();
 
         final Set<String> favoriteIds = user.getFavorites();

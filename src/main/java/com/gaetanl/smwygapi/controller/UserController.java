@@ -1,7 +1,6 @@
 package com.gaetanl.smwygapi.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.gaetanl.smwygapi.model.SimilarityParameter;
 import com.gaetanl.smwygapi.model.SimilarityProfile;
 import com.gaetanl.smwygapi.model.User;
 import com.gaetanl.smwygapi.service.TitleService;
@@ -12,7 +11,6 @@ import com.gaetanl.smwygapi.util.MalformedJsonParameter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import static org.springframework.http.HttpStatus.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +19,8 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
+
+import static org.springframework.http.HttpStatus.*;
 
 @RestController
 public class UserController {
@@ -150,37 +150,5 @@ public class UserController {
                     responseHeaders,
                     HttpStatus.OK);
         }
-    }
-
-    @GetMapping("/user/{id}/similarityProfile")
-    public @NonNull ResponseEntity<String> readSimProfile(@PathVariable("id") final int id) {
-        final HttpHeaders responseHeaders = new HttpHeaders();
-        final Optional<User> foundUser = userService.read(id);
-
-        String body = "{}";
-        HttpStatus httpStatus = OK;
-        Exception exception = null;
-
-        try {
-            if (foundUser.isEmpty()) throw new EntityNotFoundException(User.class, String.valueOf(id));
-            final SimilarityProfile sp = titleService.getSimilarityProfile(foundUser.get());
-            body = ApiUtil.getObjectAsPrettyJson(sp, "{}", responseHeaders);
-        }
-        catch (final URISyntaxException | EntityNotFoundException e) {
-            exception = e;
-            httpStatus = NOT_FOUND;
-        }
-        catch (final IOException e) {
-            exception = e;
-            httpStatus = INTERNAL_SERVER_ERROR;
-        }
-        finally {
-            if (exception != null) ApiUtil.putExceptionInResponseHeaders(responseHeaders, exception);
-        }
-
-        return new ResponseEntity<>(
-                body,
-                responseHeaders,
-                httpStatus);
     }
 }
