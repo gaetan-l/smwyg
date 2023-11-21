@@ -1,12 +1,10 @@
 package com.gaetanl.smwygapi.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.gaetanl.smwygapi.model.SimilarityProfile;
 import com.gaetanl.smwygapi.model.User;
 import com.gaetanl.smwygapi.service.TitleService;
 import com.gaetanl.smwygapi.service.UserService;
 import com.gaetanl.smwygapi.util.ApiUtil;
-import com.gaetanl.smwygapi.util.EntityNotFoundException;
 import com.gaetanl.smwygapi.util.MalformedJsonParameter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -14,9 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
 

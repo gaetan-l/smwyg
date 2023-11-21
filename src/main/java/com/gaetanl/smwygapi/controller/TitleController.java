@@ -1,6 +1,8 @@
 package com.gaetanl.smwygapi.controller;
 
+import com.gaetanl.smwygapi.dto.SmwygSearchParametersDto;
 import com.gaetanl.smwygapi.model.Genre;
+import com.gaetanl.smwygapi.model.SimilarityProfile;
 import com.gaetanl.smwygapi.model.Title;
 import com.gaetanl.smwygapi.service.TitleService;
 import com.gaetanl.smwygapi.util.ApiUtil;
@@ -63,17 +65,25 @@ public class TitleController {
      * it can be the latest titles, or those with the best score, whatever is,
      * available. The goal is to have a "default" list of titles to show when
      * no criteria are selected by the user.
+     * <p>
+     * If the body contains a JSON with search parameters, and it can be
+     * deserialized correctly into a SimilarityProfile, it will be used as
+     * parameters for the API call. Otherwise, if genres are specified, it is
+     * used instead for the search. If nothing is specified, it uses the default
+     * API function to list titles.
      *
      * @return a list of titles
      */
     @CrossOrigin(origins = "http://localhost")
     @GetMapping("/title")
-    public @NonNull ResponseEntity<String> readAllByGenres(
+    public @NonNull ResponseEntity<String> readAll(
             @RequestParam(required = false) final Optional<String> genres,
             @RequestParam(required = false) final String order,
-            @RequestParam(required = false) final Integer page) {
+            @RequestParam(required = false) final Integer page,
+            @RequestBody(required = false) final String jsonSearchParams) {
         final HttpHeaders responseHeaders = new HttpHeaders();
         final List<Title> titles;
+        final SmwygSearchParametersDto sp;
 
         String body = "[]";
         HttpStatus httpStatus = OK;
@@ -81,7 +91,11 @@ public class TitleController {
 
         try {
             final Title.TitleIndex index = order == null ? null : Title.TitleIndex.valueOf(order.toUpperCase()); // throws IllegalArgumentException, NullPointerException
-            if (genres.isPresent()) {
+            if (jsonSearchParams != null) {
+                sp = ApiUtil.getObjectMapper().readValue(jsonSearchParams, SmwygSearchParametersDto.class);
+                titles = titleService.search(sp, index, page);
+            }
+            else if (genres.isPresent()) {
                 final Set<String> genresIdsSet = new HashSet<>(Arrays.asList(genres.get().split(",")));
                 final Set<Genre> genresSet = new HashSet<>();
                 for (final String genreId: genresIdsSet) genresSet.add(titleService.readGenre(Integer.parseInt(genreId)));
@@ -136,21 +150,19 @@ public class TitleController {
             final Title.TitleIndex index = order == null ? null : Title.TitleIndex.valueOf(order.toUpperCase()); // throws IllegalArgumentException, NullPointerException
             titles = titleService.readSimilar(id, index, page);
             body = ApiUtil.getObjectAsPrettyJson(titles, "[]", responseHeaders);
-        }
-        catch (final IllegalArgumentException | NullPointerException | NoSuchElementException e) {
+        } catch (final IllegalArgumentException | NullPointerException |
+                       NoSuchElementException e) {
             exception = e;
             httpStatus = BAD_REQUEST;
-        }
-        catch (final WebClientResponseException | URISyntaxException e) {
+        } catch (final WebClientResponseException | URISyntaxException e) {
             exception = e;
             httpStatus = NOT_FOUND;
-        }
-        catch (final IOException e) {
+        } catch (final IOException e) {
             exception = e;
             httpStatus = INTERNAL_SERVER_ERROR;
-        }
-        finally {
-            if (exception != null) ApiUtil.putExceptionInResponseHeaders(responseHeaders, exception);
+        } finally {
+            if (exception != null)
+                ApiUtil.putExceptionInResponseHeaders(responseHeaders, exception);
         }
 
         return new ResponseEntity<>(

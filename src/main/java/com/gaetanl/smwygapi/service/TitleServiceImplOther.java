@@ -1,5 +1,6 @@
 package com.gaetanl.smwygapi.service;
 
+import com.gaetanl.smwygapi.dto.SmwygSearchParametersDto;
 import com.gaetanl.smwygapi.model.Genre;
 import com.gaetanl.smwygapi.model.SimilarityProfile;
 import com.gaetanl.smwygapi.model.Title;
@@ -43,6 +44,11 @@ public class TitleServiceImplOther implements TitleService {
 
     @Override
     public @NonNull List<Title> readSimilar(@NonNull String id, @Nullable final Title.TitleIndex index, @Nullable final Integer page) throws URISyntaxException, IOException {
+        return null;
+    }
+
+    @Override
+    public @NonNull List<Title> search(@NonNull SmwygSearchParametersDto searchParametersDto, @NonNull Title.TitleIndex index, @NonNull Integer page) throws URISyntaxException, IOException {
         return null;
     }
 

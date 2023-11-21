@@ -4,10 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.gaetanl.smwygapi.dto.TmdbGenreDto;
-import com.gaetanl.smwygapi.dto.TmdbMovieDetailsDto;
-import com.gaetanl.smwygapi.dto.TmdbMovieDto;
-import com.gaetanl.smwygapi.dto.TmdbMovieReducedDto;
+import com.gaetanl.smwygapi.dto.*;
 import com.gaetanl.smwygapi.model.Genre;
 import com.gaetanl.smwygapi.model.SimilarityProfile;
 import com.gaetanl.smwygapi.model.Title;
@@ -132,6 +129,55 @@ public class TitleServiceImplTmdb implements TitleService {
                 rootUri,
                 path,
                 apiKey);
+
+        final WebClient client = WebClient.create();
+        final URI uri = new URI(uriString);
+
+        logger.info(uri.toString());
+        final String body = client.get()
+                .uri(uri)
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+
+        final List<Title> pojoTitles = blockToTitleList(body);
+
+        return index == null ? pojoTitles : titleIndexer.orderListByIndex(pojoTitles, index);
+    }
+
+    @Override
+    public @NonNull List<Title> search(
+            @NonNull final SmwygSearchParametersDto sp,
+            @Nullable final Title.TitleIndex index,
+            @Nullable final Integer page) throws URISyntaxException, IOException {
+        final String path = "/discover/movie";
+
+        final List<String> queryParams = new ArrayList<>();
+        queryParams.add(String.format("include_adult=%b", sp.include_adult));
+        if (sp.primary_release_year != null) queryParams.add(String.format("primary_release_year=%d", sp.primary_release_year));
+        if ((sp.with_genres != null) && (!sp.with_genres.isEmpty())) {
+            final List<String> requestedGenreIds = new ArrayList<>();
+            for (final String requestedGenreName: sp.with_genres) {
+                for (final Genre genre: getGenres().values()) {
+                    if (Objects.equals(genre.getName(), requestedGenreName)) {
+                        requestedGenreIds.add(String.valueOf(genre.getId()));
+                        break;
+                    }
+                }
+            }
+            queryParams.add(String.format("with_genres=%s",
+                    String.join(",", String.join("%7C", requestedGenreIds))));
+        }
+        if ((sp.with_keywords != null) && (!sp.with_keywords.isEmpty())) queryParams.add(String.format("with_keywords=%s", String.join(",", sp.with_keywords)));
+        if (sp.with_origin_country != null) queryParams.add(String.format("with_origin_country=%s", sp.with_origin_country));
+        if (sp.with_original_language != null) queryParams.add(String.format("with_original_language=%s", sp.with_original_language));
+
+        final String uriString = String.format("%s%s?api_key=%s&%s",
+                rootUri,
+                path,
+                apiKey,
+                String.join("&", queryParams));
 
         final WebClient client = WebClient.create();
         final URI uri = new URI(uriString);

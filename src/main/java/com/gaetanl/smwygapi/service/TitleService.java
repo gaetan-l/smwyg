@@ -1,9 +1,7 @@
 package com.gaetanl.smwygapi.service;
 
-import com.gaetanl.smwygapi.model.Genre;
-import com.gaetanl.smwygapi.model.SimilarityProfile;
-import com.gaetanl.smwygapi.model.Title;
-import com.gaetanl.smwygapi.model.User;
+import com.gaetanl.smwygapi.dto.SmwygSearchParametersDto;
+import com.gaetanl.smwygapi.model.*;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import java.io.IOException;
@@ -39,7 +37,7 @@ public interface TitleService {
      * @param  index               the index used to order the results
      * @param  page                the page of result to return, defaults to 1
      *                             if empty
-     * @param genres               the set of genres to look for
+     * @param  genres              the set of genres to look for
      * @return                     a list of titles
      * @throws IOException         during Jackson deserialization
      * @throws URISyntaxException  during API call URI building
@@ -59,12 +57,29 @@ public interface TitleService {
     /**
      * Returns titles similar to the one specified.
      *
-     * @param  id                  the id of title of reference
+     * @param   id                  the id of title of reference
+     * @param   index               the index used to order the results
+     * @param   page                the page of result to return, defaults to 1
+     * @return                      a list of similar titles
+     * @throws  IOException         during Jackson deserialization
+     * @throws  URISyntaxException  during API call URI building
+     */
+    @NonNull List<Title> readSimilar(@NonNull final String id, @Nullable final Title.TitleIndex index, @Nullable final Integer page) throws URISyntaxException, IOException;
+
+    /**
+     * Advanced search function using a similarity profile.
+     * {@link com.gaetanl.smwygapi.model.SimilarityProfile}
+     *
+     * @param  searchParametersDto the parameters of the search
      * @param  index               the index used to order the results
      * @param  page                the page of result to return, defaults to 1
-     * @return                     a list of similar titles
+     * @return                     a list of titles corresponding to the
+     *                             parameters
      * @throws IOException         during Jackson deserialization
      * @throws URISyntaxException  during API call URI building
      */
-    @NonNull List<Title> readSimilar(@NonNull final String id, @Nullable final Title.TitleIndex index, @Nullable final Integer page) throws URISyntaxException, IOException;
+    @NonNull List<Title> search(
+            @NonNull SmwygSearchParametersDto searchParametersDto,
+            @Nullable final Title.TitleIndex index,
+            @Nullable final Integer page) throws URISyntaxException, IOException;
 }
