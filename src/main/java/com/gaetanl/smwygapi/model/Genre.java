@@ -26,8 +26,6 @@ public class Genre implements ModelObject {
 
 
     // Indexes
-    @SuppressWarnings("unused")
-    // Indexes are instanced using strings passed to rest controllers
     public enum GenreIndex implements ModelIndex<Genre> {
         ID {@Override public String getIndexedValue(final Genre objectToIndex) {return String.valueOf(objectToIndex.id);}},
         NAME {@Override public String getIndexedValue(final Genre objectToIndex) {return objectToIndex.name;}}

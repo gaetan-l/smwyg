@@ -2,13 +2,10 @@ package com.gaetanl.smwygapi.service;
 
 import com.gaetanl.smwygapi.dto.SmwygSearchParametersDto;
 import com.gaetanl.smwygapi.model.Genre;
-import com.gaetanl.smwygapi.model.SimilarityProfile;
 import com.gaetanl.smwygapi.model.Title;
-import com.gaetanl.smwygapi.model.User;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
-
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -33,7 +30,7 @@ public class TitleServiceImplOther implements TitleService {
     }
 
     @Override
-    public @NonNull List<Title> readAllByGenres(Title.TitleIndex index, Integer page, Set<Genre> genres) throws URISyntaxException, IOException {
+    public @NonNull List<Title> readAllByGenres(@Nullable Title.TitleIndex index, @Nullable Integer page, @NonNull Set<Genre> genres) throws URISyntaxException, IOException {
         return null;
     }
 

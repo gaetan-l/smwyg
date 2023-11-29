@@ -2,9 +2,6 @@ package com.gaetanl.smwygapi.model;
 
 import lombok.Getter;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * Class containing parameters shared by the favorite titles of a user. Used to
  * find titles that may appeal to that user.

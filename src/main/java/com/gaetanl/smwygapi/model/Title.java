@@ -2,15 +2,11 @@ package com.gaetanl.smwygapi.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.CollectionTable;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.lang.NonNull;
-
 import java.time.LocalDate;
 import java.util.Set;
 
@@ -52,7 +48,6 @@ public class Title implements ModelObject {
 
 
     // Indexes
-    @SuppressWarnings("unused") // Indexes are instanced using strings passed to rest controllers
     public enum TitleIndex implements ModelIndex<Title> {
         ID {@Override public String getIndexedValue(final Title objectToIndex) {return objectToIndex.id;}},
         NAME {@Override public String getIndexedValue(final Title objectToIndex) {return objectToIndex.name;}}

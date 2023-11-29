@@ -2,14 +2,12 @@ package com.gaetanl.smwygapi.controller;
 
 import com.gaetanl.smwygapi.dto.SmwygSearchParametersDto;
 import com.gaetanl.smwygapi.model.Genre;
-import com.gaetanl.smwygapi.model.SimilarityProfile;
 import com.gaetanl.smwygapi.model.Title;
 import com.gaetanl.smwygapi.service.TitleService;
 import com.gaetanl.smwygapi.util.ApiUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import static org.springframework.http.HttpStatus.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +15,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.*;
+import static org.springframework.http.HttpStatus.*;
 
 @RestController
 public class TitleController {

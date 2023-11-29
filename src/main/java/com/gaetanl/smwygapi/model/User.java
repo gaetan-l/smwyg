@@ -23,13 +23,7 @@ public class User implements ModelObject {
 
     // TODO: Should this be a Set<Title> ?
     @ElementCollection
-    private Set<String> favorites = new HashSet<>();
-
-    public User(@NonNull final Integer id, @NonNull final String username) {
-        this.id = id;
-        this.username = username;
-        this.favorites = new HashSet<>();
-    }
+    private final Set<String> favorites = new HashSet<>();
 
     @Override
     @JsonIgnore
@@ -40,7 +34,6 @@ public class User implements ModelObject {
 
 
     // Indexes
-    @SuppressWarnings("unused") // Indexes are instanced using strings passed to rest controllers
     public enum UserIndex implements ModelIndex<User> {
         ID {@Override public String getIndexedValue(final User objectToIndex) {return String.valueOf(objectToIndex.id);}},
         USERNAME {@Override public String getIndexedValue(final User objectToIndex) {return objectToIndex.username;}}

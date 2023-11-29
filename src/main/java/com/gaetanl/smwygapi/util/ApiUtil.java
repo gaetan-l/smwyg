@@ -24,9 +24,7 @@ public final class ApiUtil {
      *     stacktrace: [
      *       stacktraceElement,
      *       stacktraceElement,
-     *       ...
-     *     ]
-     * }
+     *       ...]}
      *
      * @param  responseHeaders  the HTTP headers in which to add the exception details
      * @param  exception        the exception to add

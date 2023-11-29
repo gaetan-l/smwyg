@@ -2,7 +2,6 @@ package com.gaetanl.smwygapi.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gaetanl.smwygapi.model.User;
-import com.gaetanl.smwygapi.service.TitleService;
 import com.gaetanl.smwygapi.service.UserService;
 import com.gaetanl.smwygapi.util.ApiUtil;
 import com.gaetanl.smwygapi.util.MalformedJsonParameter;
@@ -14,16 +13,12 @@ import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
-
 import static org.springframework.http.HttpStatus.*;
 
 @RestController
 public class UserController {
     @Autowired
     UserService userService;
-
-    @Autowired
-    TitleService titleService; // TODO: delete
 
     // TODO: add endpoint logIn()?
     // TODO: replace with signUp()?

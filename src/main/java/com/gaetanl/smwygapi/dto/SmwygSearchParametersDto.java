@@ -1,11 +1,9 @@
 package com.gaetanl.smwygapi.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-
-import java.util.ArrayList;
 import java.util.List;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "CanBeFinal"})  // Used implicitly by Jackson, must be editable by Jackson
 @JsonInclude(JsonInclude.Include.NON_NULL) // Set absent fields to default null value when deserializing
 public class SmwygSearchParametersDto {
     public boolean include_adult = false;

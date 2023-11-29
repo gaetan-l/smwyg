@@ -125,10 +125,11 @@ public class TitleServiceImplTmdb implements TitleService {
     @Override
     public @NonNull List<Title> readSimilar(@NonNull final String id, @Nullable final Title.TitleIndex index, @Nullable final Integer page) throws URISyntaxException, IOException {
         final String path = String.format("/movie/%s/similar", id);
-        final String uriString = String.format("%s%s?api_key=%s",
+        final String uriString = String.format("%s%s?api_key=%s%s",
                 rootUri,
                 path,
-                apiKey);
+                apiKey,
+                page == null ? "" : "&page=" + page);
 
         final WebClient client = WebClient.create();
         final URI uri = new URI(uriString);
@@ -173,11 +174,12 @@ public class TitleServiceImplTmdb implements TitleService {
         if (sp.with_origin_country != null) queryParams.add(String.format("with_origin_country=%s", sp.with_origin_country));
         if (sp.with_original_language != null) queryParams.add(String.format("with_original_language=%s", sp.with_original_language));
 
-        final String uriString = String.format("%s%s?api_key=%s&%s",
+        final String uriString = String.format("%s%s?api_key=%s&%s%s",
                 rootUri,
                 path,
                 apiKey,
-                String.join("&", queryParams));
+                String.join("&", queryParams),
+                page == null ? "" : "&page=" + page);
 
         final WebClient client = WebClient.create();
         final URI uri = new URI(uriString);
