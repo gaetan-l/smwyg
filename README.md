@@ -20,8 +20,15 @@ Movie and series recommendation application
 - Lombok plugin
 - WampServer
 - Initialize database with mysql > `source path/to/smwyg-init.sql`
-- Run SmwygApiApplication
-- Use Postman to query API
+- Run SmwygApiApplication => application will run on localhost:8080
+- Use Postman or client app to query API
+
+## Build and run application
+
+- Run Gradle task bootJar => will generate application .jar
+- Open command prompt and type the following command
+- `java -jar path-to-project\build\libs\smwyg-api-0.0.1-SNAPSHOT.jar`  => application will run on localhost:8080
+- Use Postman or client to query API
 
 ## Test examples
 
