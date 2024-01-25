@@ -26,7 +26,7 @@ public class TitleController {
     /**
      * Reads a single title.
      */
-    @CrossOrigin(origins = "http://localhost")
+    @CrossOrigin(origins = {"http://localhost", "http://localhost:3000"})
     @GetMapping("/title/{id}")
     public @NonNull ResponseEntity<String> read(@PathVariable("id") @NonNull final String id) {
         final HttpHeaders responseHeaders = new HttpHeaders();
@@ -73,7 +73,7 @@ public class TitleController {
      *
      * @return a list of titles
      */
-    @CrossOrigin(origins = "http://localhost")
+    @CrossOrigin(origins = {"http://localhost", "http://localhost:3000"})
     @GetMapping("/title")
     public @NonNull ResponseEntity<String> readAll(
             @RequestParam(required = false) final Optional<String> genres,
@@ -134,7 +134,7 @@ public class TitleController {
      *
      * @return a list of titles corresponding to the query
      */
-    @CrossOrigin(origins = "http://localhost")
+    @CrossOrigin(origins = {"http://localhost", "http://localhost:3000"})
     @GetMapping("/title/search")
     public @NonNull ResponseEntity<String> search(
             @RequestParam final String query,
@@ -179,7 +179,7 @@ public class TitleController {
      *
      * @return a list of similar titles
      */
-    @CrossOrigin(origins = "http://localhost")
+    @CrossOrigin(origins = {"http://localhost", "http://localhost:3000"})
     @GetMapping("/title/{id}/similar")
     public @NonNull ResponseEntity<String> readSimilar(
             @PathVariable("id") @NonNull final String id,
