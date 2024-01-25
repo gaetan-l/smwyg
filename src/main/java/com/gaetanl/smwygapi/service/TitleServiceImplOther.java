@@ -45,7 +45,12 @@ public class TitleServiceImplOther implements TitleService {
     }
 
     @Override
-    public @NonNull List<Title> search(@NonNull SmwygSearchParametersDto searchParametersDto, @NonNull Title.TitleIndex index, @NonNull Integer page) throws URISyntaxException, IOException {
+    public @NonNull List<Title> search(@NonNull SmwygSearchParametersDto searchParametersDto, @Nullable Title.TitleIndex index, @Nullable Integer page) throws URISyntaxException, IOException {
+        return null;
+    }
+
+    @Override
+    public @NonNull List<Title> searchByName(@NonNull String query, @Nullable Title.TitleIndex index, @Nullable Integer page) throws URISyntaxException, IOException {
         return null;
     }
 

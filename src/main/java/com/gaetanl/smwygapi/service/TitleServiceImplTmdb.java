@@ -197,6 +197,33 @@ public class TitleServiceImplTmdb implements TitleService {
         return index == null ? pojoTitles : titleIndexer.orderListByIndex(pojoTitles, index);
     }
 
+    @Override
+    public @NonNull List<Title> searchByName(@NonNull String query, @Nullable Title.TitleIndex index, @Nullable Integer page) throws URISyntaxException, IOException {
+        logger.info("searchByName&query=" + query);
+        final String path = "/search/movie";
+        final String uriString = String.format("%s%s?api_key=%s&query=%s%s",
+                rootUri,
+                path,
+                apiKey,
+                query,
+                page == null ? "" : "&page=" + page);
+
+        final WebClient client = WebClient.create();
+        final URI uri = new URI(uriString);
+
+        logger.info(uri.toString());
+        final String body = client.get()
+                .uri(uri)
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+
+        final List<Title> pojoTitles = blockToTitleList(body);
+
+        return index == null ? pojoTitles : titleIndexer.orderListByIndex(pojoTitles, index);
+    }
+
     /**
      * Transforms a TMDB title into a proper Title with the information that
      * interest us.

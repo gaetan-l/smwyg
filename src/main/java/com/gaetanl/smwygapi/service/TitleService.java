@@ -82,4 +82,20 @@ public interface TitleService {
             @NonNull SmwygSearchParametersDto searchParametersDto,
             @Nullable final Title.TitleIndex index,
             @Nullable final Integer page) throws URISyntaxException, IOException;
+
+    /**
+     * Simple search function by name.
+     *
+     * @param  query               the text query for the search
+     * @param  index               the index used to order the results
+     * @param  page                the page of result to return, defaults to 1
+     * @return                     a list of titles corresponding to the
+     *                             parameters
+     * @throws IOException         during Jackson deserialization
+     * @throws URISyntaxException  during API call URI building
+     */
+    @NonNull List<Title> searchByName(
+            @NonNull String query,
+            @Nullable final Title.TitleIndex index,
+            @Nullable final Integer page) throws URISyntaxException, IOException;
 }

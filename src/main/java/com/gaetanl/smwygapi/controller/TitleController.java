@@ -127,6 +127,53 @@ public class TitleController {
                 httpStatus);
     }
 
+
+
+    /**
+     * Search for titles using specified query.
+     *
+     * @return a list of titles corresponding to the query
+     */
+    @CrossOrigin(origins = "http://localhost")
+    @GetMapping("/title/search")
+    public @NonNull ResponseEntity<String> search(
+            @RequestParam final String query,
+            @RequestParam(required = false) final String order,
+            @RequestParam(required = false) final Integer page) {
+        final HttpHeaders responseHeaders = new HttpHeaders();
+        final List<Title> titles;
+
+        String body = "[]";
+        HttpStatus httpStatus = OK;
+        Exception exception = null;
+
+        try {
+            final Title.TitleIndex index = order == null ? null : Title.TitleIndex.valueOf(order.toUpperCase()); // throws IllegalArgumentException, NullPointerException
+            titles = titleService.searchByName(query, index, page);
+            body = ApiUtil.getObjectAsPrettyJson(titles, "[]", responseHeaders);
+        } catch (final IllegalArgumentException | NullPointerException |
+                       NoSuchElementException e) {
+            exception = e;
+            httpStatus = BAD_REQUEST;
+        } catch (final WebClientResponseException | URISyntaxException e) {
+            exception = e;
+            httpStatus = NOT_FOUND;
+        } catch (final IOException e) {
+            exception = e;
+            httpStatus = INTERNAL_SERVER_ERROR;
+        } finally {
+            if (exception != null)
+                ApiUtil.putExceptionInResponseHeaders(responseHeaders, exception);
+        }
+
+        return new ResponseEntity<>(
+                body,
+                responseHeaders,
+                httpStatus);
+    }
+
+
+
     /**
      * Reads titles similar to the one which id is specified.
      *

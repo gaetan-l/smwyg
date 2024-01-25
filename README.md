@@ -25,6 +25,7 @@ Movie and series recommendation application
 
 ## Build and run application
 
+- Run MySQL database
 - Run Gradle task bootJar => will generate application .jar
 - Open command prompt and type the following command
 - `java -jar path-to-project\build\libs\smwyg-api-0.0.1-SNAPSHOT.jar`  => application will run on localhost:8080
